@@ -2,7 +2,7 @@ from base import session, User, Coffre, PasswordEntry
 
 existing_user = session.query(User).filter_by(email="test@et.esiea.fr").first()
 if existing_user:
-    raise ValueError("L'utilisateur avec cet email existe déjà.")
+    raise ValueError("L'utilisateurex existe déjà")
 
 user = User(email="test@et.esiea.fr", password="mdp")
 
@@ -11,7 +11,7 @@ existing_coffre = (
     session.query(Coffre).filter_by(nom_coffre="coffre", id_user=user.Id_user).first()
 )
 if existing_coffre:
-    raise ValueError("Le coffre avec ce nom existe déjà pour cet utilisateur.")
+    raise ValueError("Le coffre existe déjà pour cet utilisateur.")
 
 
 coffre = Coffre(nom_coffre="coffre", password_coffre="coffre1", user=user)
@@ -37,10 +37,10 @@ session.add(user)
 
 try:
     session.commit()
-    print("Données insérées avec succès !")
+    print("Données insérées")
 except Exception as e:
     session.rollback()
-    print("Erreur lors de l'insertion des données :", e)
+    print("Erreur ")
 
 print(user)
 print(coffre)
