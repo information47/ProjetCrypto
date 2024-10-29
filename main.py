@@ -1,47 +1,46 @@
-from base import session, User, Coffre, PasswordEntry
+from database.base import session, Base, engine
+from models.user import User
+from models.coffre import Coffre
+from models.password_entry import PasswordEntry
 
-existing_user = session.query(User).filter_by(email="test@et.esiea.fr").first()
-if existing_user:
-    raise ValueError("L'utilisateurex existe déjà")
+Base.metadata.create_all(engine)
 
-user = User(email="test@et.esiea.fr", password="mdp")
+user1 = User(email="test@et.esiea.fr", password="mdp_user")
+coffre1 = Coffre(nom_coffre="coffre1", password_coffre="mdp_coffre1", user=user1)
 
-
-existing_coffre = (
-    session.query(Coffre).filter_by(nom_coffre="coffre", id_user=user.Id_user).first()
+password_entry1 = PasswordEntry(
+    login="login1",
+    password="mdp_entry1",
+    url="http://esiea.fr",
+    name="école",
+    coffre=coffre1,
 )
-if existing_coffre:
-    raise ValueError("Le coffre existe déjà pour cet utilisateur.")
 
-
-coffre = Coffre(nom_coffre="coffre", password_coffre="coffre1", user=user)
-user.coffres.append(coffre)
-
-
-existing_password_entry = (
-    session.query(PasswordEntry)
-    .filter_by(login="mdp1", id_coffre=coffre.Id_coffre)
-    .first()
+password_entry2 = PasswordEntry(
+    login="login2",
+    password="mdp_entry2",
+    url="http://esiea.fr",
+    name="perso",
+    coffre=coffre1,
 )
-if existing_password_entry:
-    raise ValueError("L'entrée de mot de passe existe déjà dans ce coffre.")
 
+coffre1.add_password_entry(password_entry1)
+coffre1.add_password_entry(password_entry2)
+user1.coffres.append(coffre1)
 
-password_entry = PasswordEntry(
-    login="mdp1", password="mdp1", url="http://esiea.fr", name="école", coffre=coffre
-)
-coffre.password_entries.append(password_entry)
-
-
-session.add(user)
+session.add(user1)
 
 try:
     session.commit()
-    print("Données insérées")
+    print("Utilisateur, coffres et mdp ajoutés")
 except Exception as e:
     session.rollback()
-    print("Erreur ")
+    print("Erreur lors de l'ajout des données :", e)
 
-print(user)
-print(coffre)
-print(password_entry)
+print("Vérif des mots de passe de user1 :", user1.verify_password("mdp_user"))
+
+try:
+    decrypted_entries = coffre1.unlock_coffre("mdp_coffre1")
+    print("Coffre déverrouillé :", decrypted_entries)
+except ValueError as ve:
+    print("Erreur :", ve)
