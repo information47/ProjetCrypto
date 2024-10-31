@@ -15,3 +15,6 @@ __pycache__/
 
 # Configurations spécifiques de l'OS (ex. : macOS)
 .DS_Store
+
+#node_module
+node_modules/
