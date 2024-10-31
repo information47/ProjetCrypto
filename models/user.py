@@ -11,7 +11,9 @@ class User(Base):
     email = Column(String(255), nullable=False, unique=True)
     password = Column(String(128), nullable=False)
     salt = Column(String(32), nullable=False)
-    coffres = relationship("Coffre", back_populates="user", cascade="all, delete")
+    coffres = relationship(
+        "Coffre", back_populates="user", cascade="all, delete", lazy="dynamic"
+    )
 
     def __init__(self, email, password):
         self.email = email

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Connexion</title>
+  </head>
+  <body>
+    <h2>Connexion</h2>
+    <form method="POST" action="{{ url_for('login') }}">
+      <label for="email">Email :</label>
+      <input type="email" id="email" name="email" required /><br /><br />
+
+      <label for="password">Mot de passe :</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        required
+      /><br /><br />
+
+      <button type="submit">Se connecter</button>
+    </form>
+ <p>
+      Pas encore inscrit ? <a href="{{ url_for('register') }}">Créer un compte</a>
+    </p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <ul>
+      {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %} {% endwith %}
+  </body>
+</html>

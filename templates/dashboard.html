@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Dashboard</title>
+  </head>
+  <body>
+    <h2>Bienvenue {{ user.email }}</h2>
+    <p>Ceci est votre tableau de bord principal après connexion.</p>
+
+    <h3>Vos Coffres</h3>
+    <ul>
+      {% for coffre in coffres %}
+      <li>
+        <a href="{{ url_for('unlock_coffre', coffre_id=coffre.Id_coffre) }}"
+          >{{ coffre.nom_coffre }}</a
+        >
+      </li>
+      {% else %}
+      <li>Pas de coffres disponibles</li>
+      {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('create_coffre') }}">Créer un nouveau Coffre</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <ul>
+      {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %} {% endwith %}
+  </body>
+</html>
