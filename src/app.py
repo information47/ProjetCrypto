@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from config.config import Config
 from services.crypto_utils import hash_password, encrypt_password, decrypt_password
@@ -7,6 +7,28 @@ import os
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
+
+# Route page d'accueil
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Logique pour vérifier l'utilisateur et le mot de passe ici
+
+        return redirect(url_for('dashboard.html'))
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        # Logique pour enregistrer le nouvel utilisateur ici
+        
+        # redirect to login page after registration
+        return redirect(url_for('login'))
+    return render_template('register.html')
 
 # Route pour tester le hachage d'un mot de passe
 @app.route('/test_hash', methods=['POST'])

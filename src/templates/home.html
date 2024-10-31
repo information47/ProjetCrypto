@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecurePass</title>
+    <link href="{{ url_for('static', filename='css/tailwind.css') }}" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+    <!-- Conteneur principal -->
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white shadow-lg rounded-lg p-8 max-w-md text-center">
+
+            <!-- Titre principal -->
+            <h1 class="text-4xl font-bold text-blue-600 mb-4">SecurePass</h1>
+
+            <!-- Description -->
+            <p class="text-gray-700 text-lg mb-6">
+                Gardez vos mots de passe en sécurité et accédez-y où que vous soyez.
+            </p>
+
+            <!-- Boutons d'action -->
+            <div class="flex flex-col space-y-4">
+                <a href="/login" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition duration-200">
+                    Connexion
+                </a>
+                <a href="/register" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition duration-200">
+                    Créer un nouveau compte
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

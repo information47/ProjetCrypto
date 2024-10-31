@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un compte</title>
+    <link href="{{ url_for('static', filename='css/tailwind.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-center text-gray-700">Créer un compte</h2>
+        
+        <form action="{{ url_for('register') }}" method="post" class="space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-600">Nom d'utilisateur</label>
+                <input type="text" id="username" name="username" required
+                       class="rounded w-full px-4 py-2 mt-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-600">Adresse email</label>
+                <input type="email" id="email" name="email" required
+                       class="rounded w-full px-4 py-2 mt-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-600">Mot de passe</label>
+                <input type="password" id="password" name="password" required
+                       class="rounded w-full px-4 py-2 mt-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="confirm_password" class="block text-sm font-medium text-gray-600">Confirmer le mot de passe</label>
+                <input type="password" id="confirm_password" name="confirm_password" required
+                       class="rounded w-full px-4 py-2 mt-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition duration-200">
+                S'inscrire
+            </button>
+        </form>
+        
+
+        <p class="text-sm text-gray-600">
+            Vous avez déjà un compte ?
+            <a href="{{ url_for('login') }}" class="text-blue-500 hover:underline">Se connecter</a>
+        </p>
+    </div>
+</body>
+</html>
