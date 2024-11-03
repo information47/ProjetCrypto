@@ -9,11 +9,14 @@ class User(Base):
     password = Column(String, nullable=False)
     coffres = relationship("Coffre", back_populates="user")
 
+
 class Coffre(Base):
     __tablename__ = 'coffres'
-    id = Column(Integer, primary_key=True)
-    nom_coffre = Column(String, nullable=False)
-    password_coffre = Column(String, nullable=False)  # Haché avec PBKDF2
+
+    id = Column(Integer, primary_key=True, index=True)
+    nom_coffre = Column(String, index=True)
+    password_coffre = Column(String)  # Hexadécimal format du mot de passe haché
+    salt = Column(String)  # Hexadécimal format du salt
     id_user = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="coffres")
     entries = relationship("PasswordEntry", back_populates="coffre")

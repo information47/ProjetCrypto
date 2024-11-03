@@ -1,13 +1,13 @@
-from crypto.Cipher import AES
-from crypto.Protocol.KDF import PBKDF2
+from Cryptodome.Cipher import AES
+from Cryptodome.Protocol.KDF import PBKDF2
 from src.models.models import PasswordEntry
 from src.database.database import SessionLocal
 
 
-#Ajout d'un passwordEntry dans un coffre
-def add_password_entry(coffre, login, password, url="", name=""):
+# Ajout d'un passwordEntry dans un coffre
+def add_password_entry(coffre, login, password, url="", name="", db_session=None):
     # Chiffrement du mot de passe
-    key = PBKDF2(coffre.password_coffre, b'unique_salt_for_aes', dkLen=32)
+    key = PBKDF2(bytes.fromhex(coffre.password_coffre), b'unique_salt_for_aes', dkLen=32)
     cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
     ciphertext, tag = cipher.encrypt_and_digest(password.encode())
@@ -21,8 +21,15 @@ def add_password_entry(coffre, login, password, url="", name=""):
         id_coffre=coffre.id
     )
 
-    session = SessionLocal()
-    session.add(new_entry)
-    session.commit()
-    session.close()
-    return new_entry
+    session = db_session or SessionLocal()
+    try:
+        session.add(new_entry)
+        session.commit()
+        return new_entry
+    except Exception as e:
+        session.rollback()
+        print(f"Une erreur est survenue : {e}")
+        raise
+    finally:
+        if db_session is None:  # Ne fermez pas la session si elle est injectée
+            session.close()
