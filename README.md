@@ -3,7 +3,7 @@ Gestionnaire de mots de passes
 
 
 ### Installer les dépendances
-
+pip install -r requirements.txt
 
 
 

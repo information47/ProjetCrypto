@@ -51,12 +51,17 @@ print(
 )
 
 
+try:
+    decrypt_coffre1 = vault_manager.unlock_coffre("mdp_coffre1")  
+    print("Coffre1 déverrouillé avec la clé de base :", decrypt_coffre1)
+except ValueError as ve:
+    print("Erreur lors du déverrouillage de coffre1 :", ve)
+
+
 os.environ["SECRET_KEY"] = "nouvelle_secret_key"
 load_dotenv()
 
-
-print("\n=== Deuxième partie : Test de déverrouillage avec la nouvelle SECRET_KEY ===")
-
+print("\n=== Deuxième partie : Test de déverrouillage du nouveau coffre ===")
 
 new_coffre1 = Coffre(nom_coffre="coffre2", password_coffre="mdp_coffre2", user=user1)
 session.add(new_coffre1)
@@ -70,7 +75,7 @@ except Exception as e:
 
 
 try:
-    decrypt = vault_manager.unlock_coffre("mdp_coffre2")
-    print("Coffre déverrouillé avec la nouvelle SECRET_KEY :", decrypt)
+    decrypt_coffre2 = vault_manager.unlock_coffre("mdp_coffre2")  
+    print("Coffre2 déverrouillé avec la nouvelle SECRET_KEY :", decrypt_coffre2)
 except ValueError as ve:
-    print("Erreur lors du déverrouillage du nouveau coffre :", ve)
+    print("Erreur lors du déverrouillage de coffre2 :", ve)
