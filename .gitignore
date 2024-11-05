@@ -1,20 +1,2 @@
-# Dossier de configuration d'IDE
-.idea/
-
-# Environnement virtuel
-venv/
-
-# Fichiers de cache Python
+env/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Fichiers journaux
-*.log
-
-# Configurations spécifiques de l'OS (ex. : macOS)
-.DS_Store
-
-#node_module
-node_modules/
