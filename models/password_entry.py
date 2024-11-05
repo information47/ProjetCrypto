@@ -25,8 +25,3 @@ class PasswordEntry(Base):
         key = bytes.fromhex(self.salt)
         self.password = encrypt_password(password, key)
         self.coffre = coffre
-
-    def verify_password(self, password):
-        key = bytes.fromhex(self.salt)
-        decrypted_password = decrypt_password(self.password, key)
-        return decrypted_password == password

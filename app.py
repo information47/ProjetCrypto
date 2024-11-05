@@ -11,6 +11,7 @@ from database import session as db_session
 from models.user import User
 from models.coffre import Coffre
 from models.password_entry import PasswordEntry
+from services.vaults import VaultController
 import os
 import secrets
 from dotenv import load_dotenv
@@ -20,7 +21,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
-app.secret_key = os.getenv("SECRET_KEY")
+app.secret_key = os.getenv("SECRET_KEY_flask")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
@@ -150,11 +151,13 @@ def unlock_coffre(coffre_id):
         flash("Coffre non trouvé.", "error")
         return redirect(url_for("dashboard"))
 
+    vault_manager = VaultController(coffre)  
+
     if request.method == "POST":
         password_coffre = request.form["password_coffre"]
 
         try:
-            decrypted_entries = coffre.unlock_coffre(password_coffre)
+            decrypted_entries = vault_manager.unlock_coffre(password_coffre)
             return render_template(
                 "view_entries.html", coffre=coffre, entries=decrypted_entries
             )

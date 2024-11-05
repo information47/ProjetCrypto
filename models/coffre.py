@@ -24,34 +24,4 @@ class Coffre(Base):
         key = bytes.fromhex(self.salt)
         self.password_coffre = encrypt_password(password_coffre, key)
         self.user = user
-
-    def verify_password_coffre(self, password_coffre):
-        key = bytes.fromhex(self.salt)
-        decrypted_password = decrypt_password(self.password_coffre, key)
-        return decrypted_password == password_coffre
-
-    def add_password_entry(self, password_entry):
-        self.password_entries.append(password_entry)
-
-    def unlock_coffre(self, password_coffre):
-        if not self.verify_password_coffre(password_coffre):
-            raise ValueError("Mot de passe du coffre incorrect")
-
-        decrypted_entries = []
-
-        for entry in self.password_entries:
-            try:
-                entry_key = bytes.fromhex(entry.salt)
-                decrypted_password = decrypt_password(entry.password, entry_key)
-                decrypted_entries.append(
-                    {
-                        "login": entry.login,
-                        "password": decrypted_password,
-                        "url": entry.url,
-                        "name": entry.name,
-                    }
-                )
-            except Exception as e:
-                print(f"Erreur lors du déchiffrement de l'entrée {entry.name} :", e)
-
-        return decrypted_entries
+        
