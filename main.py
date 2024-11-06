@@ -54,7 +54,7 @@ except Exception as e:
 
 
 try:
-    decrypt_coffre1 = vault_manager.unlock_coffre("mdp_coffre1")  
+    decrypt_coffre1 = vault_manager.unlock_coffre("mdp_coffre1")
     print("Coffre1 déverrouillé avec la clé de base :", decrypt_coffre1)
 except ValueError as ve:
     print("Erreur lors du déverrouillage de coffre1 :", ve)
@@ -63,12 +63,17 @@ except ValueError as ve:
 os.environ["SECRET_KEY"] = "key2"
 load_dotenv(override=True)
 
-print("\n=== Deuxième partie : Test de déverrouillage de coffre1 avec la nouvelle SECRET_KEY ===")
-
-
+print(
+    "\n=== Deuxième partie : Test de déverrouillage de coffre1 avec la nouvelle SECRET_KEY ==="
+)
 
 try:
     decrypt_coffre1_with_new_key = vault_manager.unlock_coffre("mdp_coffre1")
-    print("Coffre1 déverrouillé avec la nouvelle SECRET_KEY :", decrypt_coffre1_with_new_key)
+    print(
+        "Coffre1 déverrouillé avec la nouvelle SECRET_KEY :",
+        decrypt_coffre1_with_new_key,
+    )
 except Exception as e:
-    print("Erreur lors du déverrouillage de coffre1 avec la nouvelle SECRET_KEY :", str(e))
+    print(
+        "Erreur lors du déverrouillage de coffre1 avec la nouvelle SECRET_KEY :", str(e)
+    )

@@ -16,12 +16,9 @@ class User(Base):
     )
 
     def __init__(self, email, password):
-        self.email = email
-        self.salt = os.urandom(16).hex()
-        key = hash_password(password, bytes.fromhex(self.salt))
-        self.password = encrypt_password(password, key)
+            self.email = email
+            self.salt = os.urandom(16).hex()
+            self.password = hash_password(password, bytes.fromhex(self.salt)).hex()
 
     def verify_password(self, password):
-        key = hash_password(password, bytes.fromhex(self.salt))
-        decrypted_password = decrypt_password(self.password, key)
-        return decrypted_password == password
+        return self.password == hash_password(password, bytes.fromhex(self.salt)).hex()

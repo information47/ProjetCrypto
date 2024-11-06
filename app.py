@@ -151,7 +151,7 @@ def unlock_coffre(coffre_id):
         flash("Coffre non trouvé.", "error")
         return redirect(url_for("dashboard"))
 
-    vault_manager = VaultController(coffre)  
+    vault_manager = VaultController(coffre)
 
     if request.method == "POST":
         password_coffre = request.form["password_coffre"]

@@ -11,9 +11,7 @@ class VaultController:
         self.coffre.password_entries.append(password_entry)
 
     def verify_password_coffre(self, password_coffre):
-        key = bytes.fromhex(self.coffre.salt)
-        decrypted_password = decrypt_password(self.coffre.password_coffre, key)
-        return decrypted_password == password_coffre
+        return self.coffre.verify_password(password_coffre)
 
     def unlock_coffre(self, password_coffre):
         if not self.verify_password_coffre(password_coffre):
