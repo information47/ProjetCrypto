@@ -199,6 +199,36 @@ def add_password_entry(coffre_id):
 
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
 
+@app.route("/delete-password-entry/<int:password_entry_id>/<int:coffre_id>", methods=["POST"])
+def delete_password_entry(password_entry_id, coffre_id):
+    # Vérification si l'utilisateur est connecté et a les bons droits
+    if "user_id" not in flask_session or "session_token" not in flask_session:
+        flash("Veuillez vous connecter pour accéder au tableau de bord.", "error")
+        return redirect(url_for("login"))
+
+    # Vérification si le coffre existe et appartient à l'utilisateur
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+    if not coffre:
+        flash("Coffre non trouvé.", "error")
+        return redirect(url_for("dashboard"))
+
+    # Récupération de l'entrée de mot de passe à supprimer
+    password_entry = db_session.query(PasswordEntry).filter_by(id=password_entry_id, coffre_id=coffre_id).first()
+    if not password_entry:
+        flash("Entrée de mot de passe non trouvée.", "error")
+        return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
+    # Suppression de l'entrée
+    db_session.delete(password_entry)
+    try:
+        db_session.commit()
+        flash("Entrée de mot de passe supprimée avec succès.", "success")
+    except Exception as e:
+        db_session.rollback()
+        flash(f"Erreur lors de la suppression de l'entrée de mot de passe : {str(e)}", "error")
+
+    # Redirection vers le coffre
+    return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
 
 if __name__ == "__main__":
     app.run(debug=True)
