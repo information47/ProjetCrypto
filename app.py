@@ -16,6 +16,7 @@ import os
 import secrets
 from dotenv import load_dotenv
 from datetime import timedelta
+from services.pass_fonc import *
 
 load_dotenv()
 
@@ -37,6 +38,19 @@ def register():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
+
+        if not mdp_fort(password):
+            flash(
+                "Le mot de passe doit comporter au moins 8 caractères, inclure une majuscule, une minuscule, un chiffre et un caractère spécial.",
+                "error",
+            )
+            return redirect(url_for("register"))
+
+        if check_password_leak(password):
+            flash(
+                "Le mot de passe est compromis, veuillez en choisir un autre.", "error"
+            )
+            return redirect(url_for("register"))
 
         existing_user = db_session.query(User).filter_by(email=email).first()
         if existing_user:
@@ -114,6 +128,20 @@ def create_coffre():
 
         if not password_coffre:
             flash("Le mot de passe du coffre est obligatoire.", "error")
+            return redirect(url_for("create_coffre"))
+
+        if not mdp_fort(password_coffre):
+            flash(
+                "Le mot de passe du coffre doit comporter au moins 8 caractères, inclure une majuscule, une minuscule, un chiffre et un caractère spécial.",
+                "error",
+            )
+            return redirect(url_for("create_coffre"))
+
+        if check_password_leak(password_coffre):
+            flash(
+                "Le mot de passe du coffre est compromis, veuillez en choisir un autre.",
+                "error",
+            )
             return redirect(url_for("create_coffre"))
 
         user = (
