@@ -11,7 +11,7 @@ Base.metadata.create_all(engine)
 print("=== Première partie : Création des données avec la première SECRET_KEY ===")
 
 
-os.environ["SECRET_KEY"] = "ancienne_secret_key"
+os.environ["SECRET_KEY"]
 load_dotenv()
 
 
@@ -61,7 +61,10 @@ except ValueError as ve:
 
 
 os.environ["SECRET_KEY"] = "key2"
-load_dotenv(override=True)
+load_dotenv()
+
+
+print("Valeur de la SECRET_KEY :", os.getenv("SECRET_KEY"))
 
 print(
     "\n=== Deuxième partie : Test de déverrouillage de coffre1 avec la nouvelle SECRET_KEY ==="
@@ -69,6 +72,7 @@ print(
 
 try:
     decrypt_coffre1_with_new_key = vault_manager.unlock_coffre("mdp_coffre1")
+
     print(
         "Coffre1 déverrouillé avec la nouvelle SECRET_KEY :",
         decrypt_coffre1_with_new_key,
