@@ -258,6 +258,42 @@ def delete_password_entry(password_entry_id, coffre_id):
     # Redirection vers le coffre
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
 
+@app.route("/update-password-entry/<int:password_entry_id>/<int:coffre_id>", methods=["POST"])
+def update_password_entry(password_entry_id, coffre_id):
+    # Vérification si l'utilisateur est connecté
+    if "user_id" not in flask_session or "session_token" not in flask_session:
+        flash("Veuillez vous connecter pour accéder au tableau de bord.", "error")
+        return redirect(url_for("login"))
+
+    # Vérification si le coffre existe
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+    if not coffre:
+        flash("Coffre non trouvé.", "error")
+        return redirect(url_for("dashboard"))
+
+    # Récupération de l'entrée de mot de passe à modifier
+    password_entry = db_session.query(PasswordEntry).filter_by(Id_PasswordEntry=password_entry_id, id_coffre=coffre_id).first()
+    if not password_entry:
+        flash("Entrée de mot de passe non trouvée.", "error")
+        return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
+    # Mise à jour des champs de l'entrée existante
+    password_entry.login = request.form.get("login", password_entry.login)
+    password_entry.password = request.form.get("password", password_entry.password)
+    password_entry.url = request.form.get("url", password_entry.url)
+    password_entry.name = request.form.get("name", password_entry.name)
+
+    # Validation et sauvegarde
+    try:
+        db_session.commit()
+        flash("Entrée de mot de passe modifiée avec succès.", "success")
+    except Exception as e:
+        db_session.rollback()
+        flash(f"Erreur lors de la modification de l'entrée : {str(e)}", "error")
+
+    # Redirection vers le coffre
+    return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
