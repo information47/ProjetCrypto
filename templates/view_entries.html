@@ -13,6 +13,16 @@
         <strong>{{ entry.name }}</strong>: (Login: {{ entry.login }},
         <a href="{{ entry.url }}" target="_blank">{{ entry.url }}</a>, Mot de
         passe: {{ entry.password }})
+                <form 
+            action="{{ url_for('delete_password_entry', password_entry_id=entry.Id_PasswordEntry, coffre_id=2) }}" 
+            method="POST" 
+            class="inline">
+          <button 
+              type="submit" 
+              class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded">
+            Supprimer
+          </button>
+        </form>
       </li>
       {% else %}
       <li>Aucune entrée de mot de passe trouvée.</li>

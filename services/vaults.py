@@ -29,6 +29,7 @@ class VaultController:
                         "password": decrypted_password,
                         "url": entry.url,
                         "name": entry.name,
+                        "Id_PasswordEntry": entry.Id_PasswordEntry,
                     }
                 )
             except Exception as e:
