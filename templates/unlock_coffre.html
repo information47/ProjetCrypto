@@ -2,28 +2,49 @@
 <html lang="en">
   <head>
     <title>Déverrouiller le Coffre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <h2>Déverrouiller le Coffre : {{ coffre.nom_coffre }}</h2>
-    <form method="post">
-      <label for="password_coffre">Mot de passe du Coffre:</label>
-      <input
-        type="password"
-        id="password_coffre"
-        name="password_coffre"
-        required
-      />
-      <br />
-      <button type="submit">Déverrouiller</button>
-    </form>
-
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
-    <ul>
-      {% for category, message in messages %}
-      <li class="{{ category }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %} {% endwith %}
+  <body
+  class="bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center"
+  style="background-image: url('https://files.123freevectors.com/wp-content/original/156170-abstract-light-blue-background-vector-illustration.jpg');"
+>
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 max-w-md">
+      <h2 class="text-2xl font-bold mb-6 text-gray-700 text-center">
+        Déverrouiller le Coffre : {{ coffre.nom_coffre }}
+      </h2>
+      <form method="post">
+        <div class="mb-6">
+          <label for="password_coffre" class="block text-gray-700">Mot de passe du Coffre:</label>
+          <input
+            type="password"
+            id="password_coffre"
+            name="password_coffre"
+            required
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 focus:outline-none"
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Déverrouiller
+        </button>
+      </form>
+      <a
+        href="{{ url_for('dashboard') }}"
+        class="inline-block mt-4 text-blue-500 hover:underline"
+      >
+          Retourner au tableau de bord
+      </a>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <ul class="mt-4">
+        {% for category, message in messages %}
+        <li class="text-sm text-{{ category }}-500">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% endwith %}
+    </div>
   </body>
 </html>

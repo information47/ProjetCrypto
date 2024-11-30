@@ -3,34 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <title>Connexion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <h2>Connexion</h2>
-    <form method="POST" action="{{ url_for('login') }}">
-      <label for="email">Email :</label>
-      <input type="email" id="email" name="email" required /><br /><br />
-
-      <label for="password">Mot de passe :</label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        required
-      /><br /><br />
-
-      <button type="submit">Se connecter</button>
-    </form>
- <p>
-      Pas encore inscrit ? <a href="{{ url_for('register') }}">Créer un compte</a>
-    </p>
-
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
-    <ul>
-      {% for category, message in messages %}
-      <li class="{{ category }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %} {% endwith %}
+  <body
+  class="bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center"
+  style="background-image: url('https://files.123freevectors.com/wp-content/original/156170-abstract-light-blue-background-vector-illustration.jpg');"
+>
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 max-w-md">
+      <h2 class="text-2xl font-bold mb-6 text-gray-700 text-center">Connexion</h2>
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="mb-4">
+          <label for="email" class="block text-gray-700">Email :</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+          />
+        </div>
+        <div class="mb-6">
+          <label for="password" class="block text-gray-700">Mot de passe :</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Se connecter
+        </button>
+      </form>
+      <p class="mt-4 text-center">
+        Pas encore inscrit ?
+        <a href="{{ url_for('register') }}" class="text-blue-500 hover:underline">Créer un compte</a>
+      </p>
+    </div>
   </body>
 </html>
