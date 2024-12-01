@@ -2,6 +2,8 @@ from flask import (
     Flask,
     render_template,
     request,
+    jsonify,
+    send_file,
     redirect,
     url_for,
     flash,
@@ -26,6 +28,7 @@ app.secret_key = os.getenv("SECRET_KEY_flask")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
+
 
 
 @app.route("/")
@@ -226,6 +229,49 @@ def add_password_entry(coffre_id):
         flash(f"Erreur lors de l'ajout de l'entrée de mot de passe : {str(e)}", "error")
 
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
+@app.route('/export/<int:coffre_id>', methods=['GET'])
+def export_vault(coffre_id):
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+
+    if coffre is None:
+        return 'Coffre introuvable', 404
+
+    # Créer une instance de VaultController
+    vault_manager = VaultController(coffre)
+
+    # Chemin du fichier où exporter les données
+    file_path = f"exported_vault_{coffre_id}.json"
+
+    # Exporter le coffre
+    success = vault_manager.export_coffre(file_path)
+
+    if success:
+        return send_file(file_path, as_attachment=True)
+    else:
+        return 'Erreur lors de l\'exportation', 500
+
+
+@app.route('/import/<int:coffre_id>', methods=['POST'])
+def import_vault(coffre_id):
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+
+    if coffre is None:
+        return 'Coffre introuvable', 404
+
+    # Créer une instance de VaultController
+    vault_manager = VaultController(coffre)
+
+    # Chemin du fichier depuis lequel importer les données
+    file_path = request.files['vault_file']
+
+    # Importer le coffre
+    success = vault_manager.import_coffre(file_path)
+
+    if success:
+        return 'Importation réussie', 200
+    else:
+        return 'Erreur lors de l\'importation', 500
 
 
 if __name__ == "__main__":
