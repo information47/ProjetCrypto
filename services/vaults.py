@@ -1,6 +1,6 @@
 from models.coffre import Coffre
 from services.crypto_utils import encrypt_password, decrypt_password
-import os
+import json
 
 
 class VaultController:
@@ -35,3 +35,42 @@ class VaultController:
                 print(f"Erreur lors du déchiffrement de l'entrée {entry.name} :", e)
 
         return decrypted_entries
+
+    def export_coffre(self, file_path):
+        try:
+            exported_data = []
+
+            for entry in self.coffre.password_entries:
+                exported_data.append({
+                    "login": entry.login,
+                    "password": entry.password,  # Notez que c'est le mot de passe chiffré
+                    "url": entry.url,
+                    "name": entry.name,
+                    "salt": entry.salt
+                })
+
+            with open(file_path, "w") as file:
+                json.dump(exported_data, file, indent=4)
+
+            return True
+
+        except Exception as e:
+            print(f"Erreur lors de l'exportation du coffre : {e}")
+            return False
+
+    def import_coffre(self, file_path):
+        try:
+            with open(file_path, "r") as file:
+                entries = json.load(file)
+
+            for entry in entries:
+                self.coffre.password_entries.append(entry)
+
+            return True
+
+        except json.JSONDecodeError as jde:
+            print(f"Erreur de format JSON lors de l'importation : {jde}")
+            return False
+        except Exception as e:
+            print(f"Erreur lors de l'importation du coffre : {e}")
+            return False
