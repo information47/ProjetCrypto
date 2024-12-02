@@ -2,52 +2,83 @@
 <html lang="en">
   <head>
     <title>Entrées de Mot de Passe</title>
+    <link
+      href="{{ url_for('static', filename='css/password_entries.css') }}"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <h2>Entrées de Mot de Passe pour : {{ coffre.nom_coffre }}</h2>
+    <div class="container">
+      <h2>Entrées de Mot de Passe pour : {{ coffre.nom_coffre }}</h2>
 
-    <h3>Vos Entrées de Mot de Passe</h3>
-    <ul>
-      {% for entry in entries %}
-      <li>
-        <strong>{{ entry.name }}</strong>: (Login: {{ entry.login }},
-        <a href="{{ entry.url }}" target="_blank">{{ entry.url }}</a>, Mot de
-        passe: {{ entry.password }})
-      </li>
-      {% else %}
-      <li>Aucune entrée de mot de passe trouvée.</li>
-      {% endfor %}
-    </ul>
+      <h3>Vos Entrées de Mot de Passe</h3>
+      <table class="entries-table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Login</th>
+            <th>URL</th>
+            <th>Mot de Passe</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in entries %}
+          <tr>
+            <td>{{ entry.name }}</td>
+            <td>{{ entry.login }}</td>
+            <td>
+              <a href="{{ entry.url }}" target="_blank">{{ entry.url }}</a>
+            </td>
+            <td>{{ entry.password }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4">Aucune entrée de mot de passe trouvée.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
-    <h3>Ajouter une Entrée de Mot de Passe</h3>
-    <form
-      method="post"
-      action="{{ url_for('add_password_entry', coffre_id=coffre.Id_coffre) }}"
-    >
-      <label for="name">Nom:</label>
-      <input type="text" id="name" name="name" required />
-      <br />
-      <label for="login">Login:</label>
-      <input type="text" id="login" name="login" required />
-      <br />
-      <label for="url">URL:</label>
-      <input type="url" id="url" name="url" required />
-      <br />
-      <label for="password">Mot de passe:</label>
-      <input type="password" id="password" name="password" required />
-      <br />
-      <button type="submit">Ajouter Entrée</button>
-    </form>
+      <h3>Ajouter une Entrée de Mot de Passe</h3>
+      <form
+        method="post"
+        action="{{ url_for('add_password_entry', coffre_id=coffre.Id_coffre) }}"
+      >
+        <label for="name">Nom:</label>
+        <input type="text" id="name" name="name" required />
+        <br />
+        <label for="login">Login:</label>
+        <input type="text" id="login" name="login" required />
+        <br />
+        <label for="url">URL:</label>
+        <input type="url" id="url" name="url" required />
+        <br />
+        <label for="password">Mot de passe:</label>
+        <input type="password" id="password" name="password" required />
+        <br />
+        <button type="submit">Ajouter Entrée</button>
+      </form>
 
-    <a href="{{ url_for('dashboard') }}">Retourner au tableau de bord</a>
+      <a href="{{ url_for('dashboard') }}">Retourner au tableau de bord</a>
 
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
-    <ul>
-      {% for category, message in messages %}
-      <li class="{{ category }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %} {% endwith %}
+      <div class="messages">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
+        <ul>
+          {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %} {% endwith %}
+      </div>
+    </div>
+
+    <script>
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+          window.location.reload();
+        }
+      });
+    </script>
   </body>
 </html>

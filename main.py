@@ -44,7 +44,6 @@ vault_manager.add_password_entry(password_entry2)
 user1.coffres.append(coffre1)
 session.add(user1)
 
-
 try:
     session.commit()
     print("Utilisateur, coffres et mdp ajoutés")
