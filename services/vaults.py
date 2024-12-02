@@ -10,6 +10,9 @@ class VaultController:
     def add_password_entry(self, password_entry):
         self.coffre.password_entries.append(password_entry)
 
+    def Delete_password_entry(self, password_entry):
+        self.coffre.password_entries.remove(password_entry)
+
     def verify_password_coffre(self, password_coffre):
         return self.coffre.verify_password(password_coffre)
 
