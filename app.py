@@ -241,11 +241,7 @@ def delete_password_entry(password_entry_id, coffre_id):
         return redirect(url_for("dashboard"))
 
     # Récupération de l'entrée de mot de passe à supprimer
-<<<<<<< HEAD
     password_entry = db_session.query(PasswordEntry).filter_by(Id_PasswordEntry=password_entry_id, id_coffre=coffre_id).first()
-=======
-    password_entry = db_session.query(PasswordEntry).filter_by(id=password_entry_id, coffre_id=coffre_id).first()
->>>>>>> dev
     if not password_entry:
         flash("Entrée de mot de passe non trouvée.", "error")
         return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
@@ -261,7 +257,6 @@ def delete_password_entry(password_entry_id, coffre_id):
 
     # Redirection vers le coffre
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
-<<<<<<< HEAD
 
 @app.route("/update-password-entry/<int:password_entry_id>/<int:coffre_id>", methods=["POST"])
 def update_password_entry(password_entry_id, coffre_id):
@@ -298,9 +293,6 @@ def update_password_entry(password_entry_id, coffre_id):
 
     # Redirection vers le coffre
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
-
-=======
->>>>>>> dev
 
 if __name__ == "__main__":
     app.run(debug=True)
