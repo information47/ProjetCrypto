@@ -41,13 +41,15 @@ class VaultController:
             exported_data = []
 
             for entry in self.coffre.password_entries:
-                exported_data.append({
-                    "login": entry.login,
-                    "password": entry.password,  # Notez que c'est le mot de passe chiffré
-                    "url": entry.url,
-                    "name": entry.name,
-                    "salt": entry.salt
-                })
+                exported_data.append(
+                    {
+                        "login": entry.login,
+                        "password": entry.password,
+                        "url": entry.url,
+                        "name": entry.name,
+                        "salt": entry.salt,
+                    }
+                )
 
             with open(file_path, "w") as file:
                 json.dump(exported_data, file, indent=4)

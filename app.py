@@ -34,7 +34,6 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
 
 
-
 @app.route("/")
 def home():
     return redirect(url_for("login"))
@@ -243,12 +242,13 @@ def add_password_entry(coffre_id):
 
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
 
-@app.route('/export/<int:coffre_id>', methods=['GET'])
+
+@app.route("/export/<int:coffre_id>", methods=["GET"])
 def export_vault(coffre_id):
     coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
 
     if coffre is None:
-        return 'Coffre introuvable', 404
+        return "Coffre introuvable", 404
 
     # Créer une instance de VaultController
     vault_manager = VaultController(coffre)
@@ -262,29 +262,28 @@ def export_vault(coffre_id):
     if success:
         return send_file(file_path, as_attachment=True)
     else:
-        return 'Erreur lors de l\'exportation', 500
+        return "Erreur lors de l'exportation", 500
 
 
-@app.route('/import/<int:coffre_id>', methods=['POST'])
+@app.route("/import/<int:coffre_id>", methods=["POST"])
 def import_vault(coffre_id):
     coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
 
     if coffre is None:
-        return 'Coffre introuvable', 404
+        return "Coffre introuvable", 404
 
     # Créer une instance de VaultController
     vault_manager = VaultController(coffre)
 
     # Chemin du fichier depuis lequel importer les données
-    file_path = request.files['vault_file']
+    file_path = request.files["vault_file"]
 
     # Importer le coffre
     success = vault_manager.import_coffre(file_path)
-
     if success:
-        return 'Importation réussie', 200
+        return "Importation réussie", 200
     else:
-        return 'Erreur lors de l\'importation', 500
+        return "Erreur lors de l'importation", 500
 
 
 if __name__ == "__main__":
