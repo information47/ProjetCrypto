@@ -1,4 +1,5 @@
 from models.coffre import Coffre
+from models.password_entry import PasswordEntry
 from services.crypto_utils import encrypt_password, decrypt_password
 import json
 
@@ -65,8 +66,20 @@ class VaultController:
             with open(file_path, "r") as file:
                 entries = json.load(file)
 
+            # Assurez-vous de supprimer les anciennes entrées si nécessaire
+            self.coffre.password_entries.clear()
+
             for entry in entries:
-                self.coffre.password_entries.append(entry)
+                # Le mot de passe est en texte clair dans l'export, il doit donc être chiffré à nouveau
+                password_entry = PasswordEntry(
+                    login=entry["login"],
+                    password=entry["password"],  # Re-chiffre ici dans le constructeur
+                    url=entry["url"],
+                    name=entry["name"],
+                    coffre=self.coffre  # Indique à quel coffre l'entrée appartient
+                )
+                # Ajout de l'entrée chiffrée à la liste des entrées
+                self.coffre.password_entries.append(password_entry)
 
             return True
 
@@ -76,3 +89,4 @@ class VaultController:
         except Exception as e:
             print(f"Erreur lors de l'importation du coffre : {e}")
             return False
+

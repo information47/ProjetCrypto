@@ -1,6 +1,8 @@
 # Dossier de configuration d'IDE
 .idea/
 
+.env/
+key.py/
 # Environnement virtuel
 venv/
 

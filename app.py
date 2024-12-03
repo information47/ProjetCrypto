@@ -275,15 +275,25 @@ def import_vault(coffre_id):
     # Créer une instance de VaultController
     vault_manager = VaultController(coffre)
 
-    # Chemin du fichier depuis lequel importer les données
-    file_path = request.files["vault_file"]
+    # Traitement du fichier envoyé par l'utilisateur
+    file_storage = request.files.get("vault_file")
 
-    # Importer le coffre
-    success = vault_manager.import_coffre(file_path)
+    if not file_storage:
+        return "Aucun fichier téléchargé", 400
+
+    # Importation du coffre en lisant le contenu du fichier
+    try:
+        # Le fichier est traité comme un fichier temporaire
+        success = vault_manager.import_coffre(file_storage)
+    except Exception as e:
+        print(f"Erreur lors de l'importation : {e}")
+        return "Erreur lors de l'importation", 500
+
     if success:
         return "Importation réussie", 200
     else:
         return "Erreur lors de l'importation", 500
+
 
 
 if __name__ == "__main__":
