@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from database.base import Base
 from services.crypto_utils import hash_password
 import os
+from models.password_entry import PasswordEntry
 
 class Coffre(Base):
     __tablename__ = "coffre"
