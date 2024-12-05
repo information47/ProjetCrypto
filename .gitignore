@@ -1,7 +1,19 @@
+# Dossier de configuration d'IDE
+.idea/
+
 .env
-env/
-# Byte-compiled / optimized / DLL files
+key.py/
+# Environnement virtuel
+venv/
+
+# Fichiers de cache Python
 __pycache__/
-*.py[cod]
-*$py.class
-database/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Fichiers journaux
+*.log
+
+# Configurations spécifiques de l'OS (ex. : macOS)
+.DS_Store
