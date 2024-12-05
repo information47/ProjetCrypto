@@ -292,11 +292,16 @@ def update_password_entry(password_entry_id, coffre_id):
         flash("Entrée de mot de passe non trouvée.", "error")
         return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
 
-    # Mise à jour des champs de l'entrée existante
-    password_entry.login = request.form.get("login", password_entry.login)
-    password_entry.password = request.form.get("password", password_entry.password)
-    password_entry.url = request.form.get("url", password_entry.url)
-    password_entry.name = request.form.get("name", password_entry.name)
+    new_password_entry = PasswordEntry (
+    login = request.form.get("login", password_entry.login),
+    password = request.form.get("password", password_entry.password),
+    url = request.form.get("url", password_entry.url),
+    name = request.form.get("name", password_entry.name),
+    coffre = coffre
+    )
+    
+    db_session.delete(password_entry)
+    db_session.add(new_password_entry)
 
     # Validation et sauvegarde
     try:
