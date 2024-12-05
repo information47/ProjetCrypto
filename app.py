@@ -2,10 +2,14 @@ from flask import (
     Flask,
     render_template,
     request,
+    jsonify,
+    send_file,
     redirect,
     url_for,
     flash,
     session as flask_session,
+    send_from_directory,
+    make_response,
 )
 from database import session as db_session
 from models.user import User
@@ -17,6 +21,8 @@ import secrets
 from dotenv import load_dotenv
 from datetime import timedelta
 from services.pass_fonc import *
+from functools import wraps
+
 
 load_dotenv()
 
@@ -33,6 +39,15 @@ def home():
     return redirect(url_for("login"))
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, "static", "img"),
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
+    )
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -45,7 +60,6 @@ def register():
                 "error",
             )
             return redirect(url_for("register"))
-
         if check_password_leak(password):
             flash(
                 "Le mot de passe est compromis, veuillez en choisir un autre.", "error"
@@ -56,7 +70,6 @@ def register():
         if existing_user:
             flash("Un utilisateur avec cet email existe déjà.", "error")
             return redirect(url_for("register"))
-
         user = User(email=email, password=password)
         db_session.add(user)
         try:
@@ -67,7 +80,6 @@ def register():
             db_session.rollback()
             flash(f"Erreur lors de l'enregistrement de l'utilisateur : {e}", "error")
             return redirect(url_for("register"))
-
     return render_template("register.html")
 
 
@@ -84,11 +96,14 @@ def login():
             flask_session["user_id"] = str(user.Id_user)
             flask_session["session_token"] = session_token
             flask_session.permanent = True
-            flash("Connexion réussie", "success")
+
             return redirect(url_for("dashboard"))
         else:
             flash("Adresse email ou mot de passe incorrect.", "error")
             return redirect(url_for("login"))
+
+    flask_session.pop("user_id", None)
+    flask_session.pop("session_token", None)
 
     return render_template("login.html")
 
@@ -293,6 +308,59 @@ def update_password_entry(password_entry_id, coffre_id):
 
     # Redirection vers le coffre
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
+@app.route("/export/<int:coffre_id>", methods=["GET"])
+def export_vault(coffre_id):
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+
+    if coffre is None:
+        return "Coffre introuvable", 404
+
+    # Créer une instance de VaultController
+    vault_manager = VaultController(coffre)
+
+    # Chemin du fichier où exporter les données
+    file_path = f"exported_vault_{coffre_id}.json"
+
+    # Exporter le coffre
+    success = vault_manager.export_coffre(file_path)
+
+    if success:
+        return send_file(file_path, as_attachment=True)
+    else:
+        return "Erreur lors de l'exportation", 500
+
+
+@app.route("/import/<int:coffre_id>", methods=["POST"])
+def import_vault(coffre_id):
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+
+    if coffre is None:
+        return "Coffre introuvable", 404
+
+    # Créer une instance de VaultController
+    vault_manager = VaultController(coffre)
+
+    # Traitement du fichier envoyé par l'utilisateur
+    file_storage = request.files.get("vault_file")
+
+    if not file_storage:
+        return "Aucun fichier téléchargé", 400
+
+    # Importation du coffre en lisant le contenu du fichier
+    try:
+        # Le fichier est traité comme un fichier temporaire
+        success = vault_manager.import_coffre(file_storage)
+    except Exception as e:
+        print(f"Erreur lors de l'importation : {e}")
+        return "Erreur lors de l'importation", 500
+
+    if success:
+        return "Importation réussie", 200
+    else:
+        return "Erreur lors de l'importation", 500
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

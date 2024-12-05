@@ -3,34 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <title>Connexion</title>
+    <link
+      href="{{ url_for('static', filename='css/mdp.css') }}"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <h2>Connexion</h2>
-    <form method="POST" action="{{ url_for('login') }}">
-      <label for="email">Email :</label>
-      <input type="email" id="email" name="email" required /><br /><br />
+    <div class="container">
+      <h2>Connexion</h2>
+      <form method="POST" action="{{ url_for('login') }}">
+        <label for="email">Email :</label>
+        <input type="email" id="email" name="email" required />
 
-      <label for="password">Mot de passe :</label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        required
-      /><br /><br />
+        <label for="password">Mot de passe :</label>
+        <input type="password" id="password" name="password" required />
 
-      <button type="submit">Se connecter</button>
-    </form>
- <p>
-      Pas encore inscrit ? <a href="{{ url_for('register') }}">Créer un compte</a>
-    </p>
+        <button type="submit">Se connecter</button>
+      </form>
+      <p>
+        Pas encore inscrit ?
+        <a href="{{ url_for('register') }}">Créer un compte</a>
+      </p>
 
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
-    <ul>
-      {% for category, message in messages %}
-      <li class="{{ category }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %} {% endwith %}
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <ul>
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %} {% endwith %}
+    </div>
+
+    <script>
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+          window.location.reload();
+        }
+      });
+    </script>
   </body>
 </html>
