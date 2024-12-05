@@ -2,76 +2,15 @@
 <html lang="en">
   <head>
     <title>Entrées de Mot de Passe</title>
-<<<<<<< HEAD
-    <style>
-      /* Styles pour la boîte modale */
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
-      }
-
-      .modal-content {
-        background-color: #fff;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-      }
-
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-      }
-
-      .close:hover,
-      .close:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-      }
-    </style>
-=======
     <link
       href="{{ url_for('static', filename='css/password_entries.css') }}"
       rel="stylesheet"
     />
->>>>>>> dev
   </head>
   <body>
     <div class="container">
       <h2>Entrées de Mot de Passe pour : {{ coffre.nom_coffre }}</h2>
 
-<<<<<<< HEAD
-    <h3>Vos Entrées de Mot de Passe</h3>
-    <ul>
-      {% for entry in entries %}
-      <li>
-        <strong>{{ entry.name }}</strong>: (Login: {{ entry.login }},
-        <a href="{{ entry.url }}" target="_blank">{{ entry.url }}</a>, Mot de
-        passe: {{ entry.password }})
-        <form
-          action="{{ url_for('delete_password_entry', password_entry_id=entry.Id_PasswordEntry, coffre_id=coffre.Id_coffre) }}"
-          method="POST"
-          class="inline"
-        >
-          <button type="submit">Supprimer</button>
-        </form>
-        <button onclick="openEditModal('{{ entry.Id_PasswordEntry }}', '{{ entry.name }}', '{{ entry.login }}', '{{ entry.url }}', '{{ entry.password }}')">Modifier</button>
-      </li>
-      {% else %}
-      <li>Aucune entrée de mot de passe trouvée.</li>
-      {% endfor %}
-    </ul>
-=======
       <h3>Vos Entrées de Mot de Passe</h3>
       <table class="entries-table">
         <thead>
@@ -80,6 +19,7 @@
             <th>Login</th>
             <th>URL</th>
             <th>Mot de Passe</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -91,15 +31,22 @@
               <a href="{{ entry.url }}" target="_blank">{{ entry.url }}</a>
             </td>
             <td>{{ entry.password }}</td>
+            <td>
+              <form
+                method="post"
+                action="{{ url_for('delete_password_entry', password_entry_id=entry.Id_PasswordEntry, coffre_id=coffre.Id_coffre) }}"
+              >
+                <button type="submit">supprimer</button>
+              </form>
           </tr>
           {% else %}
           <tr>
             <td colspan="4">Aucune entrée de mot de passe trouvée.</td>
+            <td></td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
->>>>>>> dev
 
       <h3>Ajouter une Entrée de Mot de Passe</h3>
       <form
@@ -123,20 +70,6 @@
 
       <a href="{{ url_for('dashboard') }}">Retourner au tableau de bord</a>
 
-<<<<<<< HEAD
-
-
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
-    <ul>
-      {% for category, message in messages %}
-      <li class="{{ category }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %} {% endwith %}
-
-    
-=======
       <div class="messages">
         {% with messages = get_flashed_messages(with_categories=true) %} {% if
         messages %}
@@ -156,6 +89,5 @@
         }
       });
     </script>
->>>>>>> dev
   </body>
 </html>
