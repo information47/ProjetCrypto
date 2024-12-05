@@ -85,32 +85,7 @@
 
     <a href="{{ url_for('dashboard') }}">Retourner au tableau de bord</a>
 
-    <!-- Boîte Modale pour la Modification -->
-    <div id="editModal" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="closeEditModal()">&times;</span>
-        <h3>Modifier l'Entrée</h3>
-        <form
-          id="editForm"
-          method="POST"
-          action=""
-        >
-          <label for="editName">Nom:</label>
-          <input type="text" id="editName" name="name" required />
-          <br />
-          <label for="editLogin">Login:</label>
-          <input type="text" id="editLogin" name="login" required />
-          <br />
-          <label for="editUrl">URL:</label>
-          <input type="url" id="editUrl" name="url" required />
-          <br />
-          <label for="editPassword">Mot de passe:</label>
-          <input type="password" id="editPassword" name="password" required />
-          <br />
-          <button type="submit">Modifier</button>
-        </form>
-      </div>
-    </div>
+
 
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %}
@@ -121,31 +96,6 @@
     </ul>
     {% endif %} {% endwith %}
 
-    <script>
-      // Fonction pour ouvrir la boîte modale de modification
-      function openEditModal(id, name, login, url, password) {
-        const modal = document.getElementById("editModal");
-        const form = document.getElementById("editForm");
-        const coffreId = "{{ coffre.Id_coffre }}";
-
-        // Pré-remplir les champs avec les données existantes
-        document.getElementById("editName").value = name;
-        document.getElementById("editLogin").value = login;
-        document.getElementById("editUrl").value = url;
-        document.getElementById("editPassword").value = password;
-
-        // Mettre à jour l'URL d'action du formulaire
-        form.action = `/update-password-entry/${id}/${coffreId}`;
-
-        // Afficher la boîte modale
-        modal.style.display = "block";
-      }
-
-      // Fonction pour fermer la boîte modale
-      function closeEditModal() {
-        const modal = document.getElementById("editModal");
-        modal.style.display = "none";
-      }
-    </script>
+    
   </body>
 </html>
