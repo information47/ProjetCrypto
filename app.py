@@ -314,26 +314,21 @@ def update_password_entry(password_entry_id, coffre_id):
     # Redirection vers le coffre
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
 
-@app.route("/export/<int:coffre_id>", methods=["GET"])
-def export_vault(coffre_id):
-    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+@app.route('/export/<int:coffre_id>', methods=['POST'])
+def export_coffre(coffre_id):
+    # Logique pour obtenir les données exportées du coffre
+    # Exemple : export_data = obtenir_les_données(coffre_id)
+    export_data = {
+        'coffre_id': coffre_id,
+        # Ajoutez ici des données simulées pour démonstration
+        # Clé exemple: valeurs
+    }
+    file_path = os.path.join(os.path.expanduser("~"), "Downloads", f"coffre_{coffre_id}.json")
 
-    if coffre is None:
-        return "Coffre introuvable", 404
+    with open(file_path, 'w') as f:
+        f.write(export_data)  # Convertir en format JSON avant d'écrire
 
-    # Créer une instance de VaultController
-    vault_manager = VaultController(coffre)
-
-    # Chemin du fichier où exporter les données
-    file_path = f"exported_vault_{coffre_id}.json"
-
-    # Exporter le coffre
-    success = vault_manager.export_coffre(file_path)
-
-    if success:
-        return send_file(file_path, as_attachment=True)
-    else:
-        return "Erreur lors de l'exportation", 500
+    return send_file(file_path, as_attachment=True)
 
 
 @app.route("/import/<int:coffre_id>", methods=["POST"])
