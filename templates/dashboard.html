@@ -4,38 +4,65 @@
     <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto py-12 px-6">
-      <h2 class="text-2xl font-bold text-gray-800 text-center">Bienvenue {{ user.email }}</h2>
-      <p class="text-center text-gray-600 mt-4">Ceci est votre tableau de bord principal après connexion.</p>
+  <body
+    class="bg-gray-100 min-h-screen"
+    style="background-image: url('https://files.123freevectors.com/wp-content/original/156170-abstract-light-blue-background-vector-illustration.jpg'); background-size: cover; background-position: center;"
+  >
+    <div class="flex justify-center items-center min-h-screen">
+      <div class="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
+        <h2 class="text-2xl font-bold text-gray-800 text-center">
+          Bienvenue {{ user.email }}
+        </h2>
+        <p class="text-center text-gray-600 mt-4">
+          Ceci est votre tableau de bord principal après connexion.
+        </p>
 
-      <h3 class="text-xl font-semibold text-gray-700 mt-8 mb-4 text-center">Vos Coffres</h3>
-      <ul class="space-y-4">
-        {% for coffre in coffres %}
-        <li class="bg-white shadow-md rounded-md p-4">
-          <a href="{{ url_for('unlock_coffre', coffre_id=coffre.Id_coffre) }}" class="text-blue-500 hover:underline font-medium">{{ coffre.nom_coffre }}</a>
-        </li>
-        {% else %}
-        <li class="text-gray-500 text-center">Pas de coffres disponibles</li>
-        {% endfor %}
-      </ul>
+        <h3 class="text-xl font-semibold text-gray-700 mt-8 mb-4 text-center">
+          Vos Coffres
+        </h3>
+        <ul class="space-y-4">
+          {% for coffre in coffres %}
+          <li class="bg-blue-50 hover:bg-blue-100 shadow-sm rounded-md p-4 transition-colors duration-200">
+            <a
+              href="{{ url_for('unlock_coffre', coffre_id=coffre.Id_coffre) }}"
+              class="text-blue-600 hover:text-blue-800 font-medium"
+              >{{ coffre.nom_coffre }}</a
+            >
+          </li>
+          {% else %}
+          <li class="text-gray-500 text-center">
+            Pas de coffres disponibles
+          </li>
+          {% endfor %}
+        </ul>
 
-      <div class="text-center mt-6">
-        <a href="{{ url_for('create_coffre') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Créer un nouveau Coffre</a>
-      </div>
+        <div class="text-center mt-6">
+          <a
+            href="{{ url_for('create_coffre') }}"
+            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+            >Créer un nouveau Coffre</a
+          >
+        </div>
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      <ul class="mt-6">
-        {% for category, message in messages %}
-        <li class="text-center text-red-500 text-sm">{{ message }}</li>
-        {% endfor %}
-      </ul>
-      {% endif %}
-      {% endwith %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <ul class="mt-6">
+          {% for category, message in messages %}
+          <li class="text-center text-red-500 text-sm">
+            {{ message }}
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
 
-      <div class="fixed bottom-4 right-4">
-        <a href="{{ url_for('login') }}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Déconnexion</a>
+        <div class="text-right mt-8">
+          <a
+            href="{{ url_for('login') }}"
+            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+            >Déconnexion</a
+          >
+        </div>
       </div>
     </div>
 
