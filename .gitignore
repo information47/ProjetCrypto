@@ -1,2 +1,5 @@
 
 .env
+cert.csr
+cert.pem
+key.pem
