@@ -2,10 +2,14 @@ from flask import (
     Flask,
     render_template,
     request,
+    jsonify,
+    send_file,
     redirect,
     url_for,
     flash,
     session as flask_session,
+    send_from_directory,
+    make_response,
 )
 from database import session as db_session
 from models.user import User
@@ -17,6 +21,8 @@ import secrets
 from dotenv import load_dotenv
 from datetime import timedelta
 from services.pass_fonc import *
+from functools import wraps
+
 
 load_dotenv()
 
@@ -30,11 +36,33 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
 
 @app.route("/")
 def home():
+    """
+    Redirige l'utilisateur vers la page de connexion.
+    Returns:
+        Response: Une redirection vers la route "/login".
+    """
     return redirect(url_for("login"))
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, "static", "img"),
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
+    )
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    Gère l'enregistrement des nouveaux utilisateurs.
+    - En cas de méthode GET, affiche la page d'enregistrement.
+    - En cas de méthode POST, enregistre un utilisateur avec email et mot de passe.
+
+    Returns:
+        Response: Une page HTML ou une redirection vers la route "/register".
+    """
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -45,7 +73,6 @@ def register():
                 "error",
             )
             return redirect(url_for("register"))
-
         if check_password_leak(password):
             flash(
                 "Le mot de passe est compromis, veuillez en choisir un autre.", "error"
@@ -56,7 +83,6 @@ def register():
         if existing_user:
             flash("Un utilisateur avec cet email existe déjà.", "error")
             return redirect(url_for("register"))
-
         user = User(email=email, password=password)
         db_session.add(user)
         try:
@@ -67,12 +93,19 @@ def register():
             db_session.rollback()
             flash(f"Erreur lors de l'enregistrement de l'utilisateur : {e}", "error")
             return redirect(url_for("register"))
-
     return render_template("register.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """
+    Gère la connexion des utilisateurs.
+    - En cas de méthode GET, affiche la page de connexion.
+    - En cas de méthode POST, vérifie les identifiants de l'utilisateur et crée une session.
+
+    Returns:
+        Response: Une redirection vers "/dashboard" ou "/login", ou la page de connexion.
+    """
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -84,11 +117,14 @@ def login():
             flask_session["user_id"] = str(user.Id_user)
             flask_session["session_token"] = session_token
             flask_session.permanent = True
-            flash("Connexion réussie", "success")
+
             return redirect(url_for("dashboard"))
         else:
             flash("Adresse email ou mot de passe incorrect.", "error")
             return redirect(url_for("login"))
+
+    flask_session.pop("user_id", None)
+    flask_session.pop("session_token", None)
 
     return render_template("login.html")
 
@@ -100,6 +136,12 @@ def make_session_permanent():
 
 @app.route("/dashboard")
 def dashboard():
+    """
+    Affiche le tableau de bord de l'utilisateur, avec les coffres associés.
+
+    Returns:
+        Response: Une page HTML contenant les coffres de l'utilisateur connecté.
+    """
     if "user_id" not in flask_session or "session_token" not in flask_session:
         flash("Veuillez vous connecter pour accéder au tableau de bord.", "error")
         return redirect(url_for("login"))
@@ -118,6 +160,14 @@ def dashboard():
 
 @app.route("/create-coffre", methods=["GET", "POST"])
 def create_coffre():
+    """
+    Permet à un utilisateur connecté de créer un nouveau coffre.
+    - En cas de méthode GET, affiche la page de création.
+    - En cas de méthode POST, valide et enregistre les données du coffre.
+
+    Returns:
+        Response: Une redirection ou une page HTML.
+    """
     if "user_id" not in flask_session:
         flash("Veuillez vous connecter pour créer un coffre.", "error")
         return redirect(url_for("login"))
@@ -169,6 +219,17 @@ def create_coffre():
 
 @app.route("/unlock-coffre/<int:coffre_id>", methods=["GET", "POST"])
 def unlock_coffre(coffre_id):
+    """
+    Permet de déverrouiller un coffre avec un mot de passe.
+    - En cas de méthode GET, affiche la page pour entrer le mot de passe.
+    - En cas de méthode POST, tente de déverrouiller le coffre.
+
+    Args:
+        coffre_id (int): L'ID du coffre à déverrouiller.
+
+    Returns:
+        Response: Une page HTML ou une redirection.
+    """
     coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
 
     if "user_id" not in flask_session or "session_token" not in flask_session:
@@ -198,6 +259,15 @@ def unlock_coffre(coffre_id):
 
 @app.route("/add-password-entry/<int:coffre_id>", methods=["POST"])
 def add_password_entry(coffre_id):
+    """
+    Ajoute une entrée de mot de passe dans un coffre déverrouillé.
+
+    Args:
+        coffre_id (int): L'ID du coffre dans lequel ajouter l'entrée.
+
+    Returns:
+        Response: Une redirection vers la page du coffre déverrouillé.
+    """
     coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
 
     if "user_id" not in flask_session or "session_token" not in flask_session:
@@ -228,5 +298,165 @@ def add_password_entry(coffre_id):
     return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
 
 
+@app.route(
+    "/delete-password-entry/<int:password_entry_id>/<int:coffre_id>", methods=["POST"]
+)
+def delete_password_entry(password_entry_id, coffre_id):
+    """
+    Supprime une entrée de mot de passe dans un coffre.
+
+    Args:
+        password_entry_id (int): L'ID de l'entrée à supprimer.
+        coffre_id (int): L'ID du coffre contenant l'entrée.
+
+    Returns:
+        Response: Une redirection vers la page du coffre déverrouillé.
+    """
+    if "user_id" not in flask_session or "session_token" not in flask_session:
+        flash("Veuillez vous connecter pour accéder au tableau de bord.", "error")
+        return redirect(url_for("login"))
+
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+    if not coffre:
+        flash("Coffre non trouvé.", "error")
+        return redirect(url_for("dashboard"))
+
+    password_entry = (
+        db_session.query(PasswordEntry)
+        .filter_by(Id_PasswordEntry=password_entry_id, id_coffre=coffre_id)
+        .first()
+    )
+    if not password_entry:
+        flash("Entrée de mot de passe non trouvée.", "error")
+        return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
+    db_session.delete(password_entry)
+    try:
+        db_session.commit()
+        flash("Entrée de mot de passe supprimée avec succès.", "success")
+    except Exception as e:
+        db_session.rollback()
+        flash(
+            f"Erreur lors de la suppression de l'entrée de mot de passe : {str(e)}",
+            "error",
+        )
+
+    return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
+
+@app.route(
+    "/update-password-entry/<int:password_entry_id>/<int:coffre_id>", methods=["POST"]
+)
+def update_password_entry(password_entry_id, coffre_id):
+    """
+    Met à jour une entrée de mot de passe dans un coffre.
+
+    Args:
+        password_entry_id (int): L'ID de l'entrée à modifier.
+        coffre_id (int): L'ID du coffre contenant l'entrée.
+
+    Returns:
+        Response: Une redirection vers la page du coffre déverrouillé.
+    """
+    if "user_id" not in flask_session or "session_token" not in flask_session:
+        flash("Veuillez vous connecter pour accéder au tableau de bord.", "error")
+        return redirect(url_for("login"))
+
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+    if not coffre:
+        flash("Coffre non trouvé.", "error")
+        return redirect(url_for("dashboard"))
+
+    password_entry = (
+        db_session.query(PasswordEntry)
+        .filter_by(Id_PasswordEntry=password_entry_id, id_coffre=coffre_id)
+        .first()
+    )
+    if not password_entry:
+        flash("Entrée de mot de passe non trouvée.", "error")
+        return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
+    new_password_entry = PasswordEntry(
+        login=request.form.get("login", password_entry.login),
+        password=request.form.get("password", password_entry.password),
+        url=request.form.get("url", password_entry.url),
+        name=request.form.get("name", password_entry.name),
+        coffre=coffre,
+    )
+
+    db_session.delete(password_entry)
+    db_session.add(new_password_entry)
+
+    try:
+        db_session.commit()
+        flash("Entrée de mot de passe modifiée avec succès.", "success")
+    except Exception as e:
+        db_session.rollback()
+        flash(f"Erreur lors de la modification de l'entrée : {str(e)}", "error")
+
+    return redirect(url_for("unlock_coffre", coffre_id=coffre_id))
+
+
+@app.route("/export/<int:coffre_id>", methods=["GET"])
+def export_vault(coffre_id):
+    """
+    Exporte les données d'un coffre au format json.
+
+    Args:
+        coffre_id (int): L'ID du coffre à exporter.
+
+    Returns:
+        Response: Un fichier téléchargeable ou une erreur.
+    """
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+
+    if coffre is None:
+        return "Coffre introuvable", 404
+
+    vault_manager = VaultController(coffre)
+
+    file_path = vault_manager.export_coffre()
+
+    if file_path:
+        return send_file(file_path, as_attachment=True)
+    else:
+        return "Erreur lors de l'exportation", 500
+
+
+@app.route("/import/<int:coffre_id>", methods=["POST"])
+def import_vault(coffre_id):
+    """
+    Importe des données dans un coffre à partir d'un fichier.
+
+    Args:
+        coffre_id (int): L'ID du coffre où importer les données.
+
+    Returns:
+        Response: Un message de réussite ou une erreur.
+    """
+
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+
+    if coffre is None:
+        return "Coffre introuvable", 404
+
+    vault_manager = VaultController(coffre)
+
+    file_storage = request.files.get("vault_file")
+
+    if not file_storage:
+        return "Aucun fichier téléchargé", 400
+    try:
+        success = vault_manager.import_coffre(file_storage)
+    except Exception as e:
+        print(f"Erreur lors de l'importation : {e}")
+        return "Erreur lors de l'importation", 500
+
+    if success:
+        return "Importation réussie", 200
+    else:
+        return "Erreur lors de l'importation", 500
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, ssl_context=("cert.pem", "key.pem"))
