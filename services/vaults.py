@@ -1,10 +1,9 @@
-from models.coffre import Coffre
-from models.password_entry import PasswordEntry
-from tkinter import Tk, filedialog
-from services.crypto_utils import encrypt_password, decrypt_password
-from database.base import session
 import json
 import os
+from database.base import session
+from models.coffre import Coffre
+from models.password_entry import PasswordEntry
+from services.crypto_utils import decrypt_password
 
 
 class VaultController:
@@ -89,7 +88,8 @@ class VaultController:
         """
         Exporte les données du coffre dans un fichier JSON.
 
-        Les données exportées incluent les informations sur les entrées de mot de passe.
+        Les données exportées incluent les informations sur les entrées de mot de passe,
+        sous un format prêt à être importé.
 
         Returns:
             str: Le chemin du fichier exporté.
@@ -100,19 +100,24 @@ class VaultController:
             file_path = os.path.join(
                 downloads_folder, f"exported_vault_{self.coffre.Id_coffre}.json"
             )
-            exported_data = []
+
+            exported_data = {
+                "nom": self.coffre.nom_coffre,
+                "password_coffre": self.coffre.password_coffre,
+                "password_entries": []
+            }
+
             for entry in self.coffre.password_entries:
-                exported_data.append(
+                exported_data["password_entries"].append(
                     {
                         "login": entry.login,
                         "password": entry.password,
                         "url": entry.url,
                         "name": entry.name,
-                        "salt": entry.salt,
                     }
                 )
 
-            with open(file_path, "w") as file:
+            with open(file_path, "w", encoding="utf-8") as file:
                 json.dump(exported_data, file, indent=4)
             return file_path
 
@@ -120,7 +125,7 @@ class VaultController:
             print(f"Erreur lors de l'exportation du coffre : {e}")
             return None
 
-    def import_vault(self, user, file_path):
+    def import_coffre(self, user, file_path):
         """
         Importe un coffre à partir d'un fichier JSON donné pour un utilisateur spécifique
         et persiste dans la base de données.
@@ -133,30 +138,25 @@ class VaultController:
             bool: True si l'importation est réussie, False sinon.
         """
         try:
-            # Vérification si le fichier existe
             if not os.path.exists(file_path):
                 print("Le fichier spécifié n'existe pas.")
                 return False
 
-            # Lecture du fichier JSON
             with open(file_path, "r", encoding="utf-8") as file:
                 json_data = json.load(file)
 
-            # Validation de la structure JSON
             required_fields = ["nom", "password_coffre", "password_entries"]
             if not all(field in json_data for field in required_fields):
                 print("Certains champs requis sont manquants dans le fichier JSON.")
                 return False
 
-            # Étape 3 : Créer une instance de Coffre avec les données JSON
             try:
                 new_coffre = Coffre(
                     nom_coffre=json_data["nom"],
                     password_coffre=json_data["password_coffre"],
-                    user=user,  # Associe l'utilisateur au coffre
+                    user=user,
                 )
 
-                # Ajouter les entrées de mots de passe (password_entries)
                 for entry in json_data["password_entries"]:
                     if all(key in entry for key in ["login", "password", "url", "name"]):
                         password_entry = PasswordEntry(
@@ -164,16 +164,15 @@ class VaultController:
                             password=entry["password"],
                             url=entry["url"],
                             name=entry["name"],
-                            coffre=new_coffre,  # Associe l'entrée au coffre
+                            coffre=new_coffre,
                         )
                         new_coffre.password_entries.append(password_entry)
                     else:
                         print(f"Entrée incomplète trouvée : {entry}. Ignorée.")
 
-                # Ajouter le coffre à l'utilisateur
+
                 user.coffres.append(new_coffre)
 
-                # Étape 4 : Ajouter le coffre à la base de données
                 session.add(user)
 
                 try:
@@ -193,6 +192,5 @@ class VaultController:
             print("Le fichier fourni n'est pas un fichier JSON valide.")
             return False
         except Exception as e:
-            # Gérer toute autre exception inattendue
             print(f"Erreur inconnue lors de l'importation : {e}")
             return False
