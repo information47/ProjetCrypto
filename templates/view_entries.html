@@ -74,6 +74,14 @@
         <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Ajouter Entrée</button>
       </form>
 
+     <div class="text-center mt-6">
+        <form method="get" action="{{ url_for('export_vault', coffre_id=coffre.Id_coffre) }}" class="text-right mt-4">
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                Exporter le coffre
+            </button>
+        </form>
+     </div>
+
       <a href="{{ url_for('dashboard') }}" class="block text-center text-blue-500 hover:underline mt-6">Retourner au tableau de bord</a>
 
       <div class="messages mt-4">

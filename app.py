@@ -1,3 +1,5 @@
+import json
+
 from flask import (
     Flask,
     render_template,
@@ -9,14 +11,16 @@ from flask import (
     flash,
     session as flask_session,
     send_from_directory,
-    make_response,
+    make_response, session,
 )
 from database import session as db_session
+from werkzeug.utils import secure_filename
 from models.user import User
 from models.coffre import Coffre
 from models.password_entry import PasswordEntry
 from services.vaults import VaultController
 import os
+from database.base import session as db_session
 import secrets
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -33,6 +37,16 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
 
+# Configuration pour le répertoire d'import
+UPLOAD_FOLDER = "uploads"
+ALLOWED_EXTENSIONS = {"json"}
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+
+# Fonction utilitaire pour vérifier l'extension du fichier
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/")
 def home():
@@ -423,39 +437,74 @@ def export_vault(coffre_id):
         return "Erreur lors de l'exportation", 500
 
 
-@app.route("/import/<int:coffre_id>", methods=["POST"])
-def import_vault(coffre_id):
+@app.route("/vaults/import", methods=["GET", "POST"])
+def import_vault():
     """
-    Importe des données dans un coffre à partir d'un fichier.
-
-    Args:
-        coffre_id (int): L'ID du coffre où importer les données.
+    Route Flask pour importer un coffre au format JSON et l'associer à un utilisateur existant.
 
     Returns:
-        Response: Un message de réussite ou une erreur.
+        Redirige vers le tableau de bord ou retourne un message d'erreur.
     """
-
-    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
-
-    if coffre is None:
-        return "Coffre introuvable", 404
-
-    vault_manager = VaultController(coffre)
-
-    file_storage = request.files.get("vault_file")
-
-    if not file_storage:
-        return "Aucun fichier téléchargé", 400
     try:
-        success = vault_manager.import_coffre(file_storage)
-    except Exception as e:
-        print(f"Erreur lors de l'importation : {e}")
-        return "Erreur lors de l'importation", 500
+        # Vérifie que l'utilisateur est connecté
+        user_id = session.get("user_id")
+        if not user_id:
+            flash("Vous devez être connecté pour importer un coffre.", "error")
+            return redirect(url_for("login"))
 
-    if success:
-        return "Importation réussie", 200
-    else:
-        return "Erreur lors de l'importation", 500
+        # Récupération de l'utilisateur (exemple avec SQLAlchemy)
+        user = db_session.query(User).filter_by(Id_user=user_id).one_or_none()
+        if not user:
+            flash("Utilisateur introuvable.", "error")
+            return redirect(url_for("login"))
+
+        # Vérifie si un fichier a été envoyé
+        if "vault_file" not in request.files:
+            flash("Aucun fichier n'a été sélectionné.", "error")
+            return redirect(url_for("create_coffre"))
+
+        file = request.files["vault_file"]
+
+        # Vérifie que le fichier a un nom valide
+        if file.filename == "":
+            flash("Aucun fichier sélectionné.", "error")
+            return redirect(url_for("create_coffre"))
+
+        # Vérifie l'extension du fichier
+        if not allowed_file(file.filename):
+            flash("Seuls les fichiers .json sont autorisés.", "error")
+            return redirect(url_for("create_coffre"))
+
+        # Assurez un nom de fichier sécurisé
+        filename = secure_filename(file.filename)
+        upload_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+        # Crée le répertoire d'upload s'il n'existe pas
+        if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+            os.makedirs(app.config["UPLOAD_FOLDER"])
+
+        # Sauvegarde du fichier
+        file.save(upload_path)
+
+        # Appel au gestionnaire de coffre (VaultController) pour processus d'importation
+        vault_manager = VaultController(None)
+        success = vault_manager.import_vault(user, upload_path)
+
+        # Résultat de l'importation
+        if success:
+            flash("Le fichier a été importé avec succès !", "success")
+            return redirect(url_for("dashboard"))
+        else:
+            flash("Une erreur est survenue lors de l'importation.", "error")
+            return redirect(url_for("create_coffre"))
+
+    except json.JSONDecodeError:
+        flash("Le fichier JSON est invalide.", "error")
+        return redirect(url_for("create_coffre"))
+    except Exception as e:
+        print(f"Erreur inattendue : {e}")
+        flash("Une erreur inattendue s'est produite.", "error")
+        return redirect(url_for("create_coffre"))
 
 
 if __name__ == "__main__":
