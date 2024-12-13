@@ -1,32 +1,28 @@
 import json
+import secrets
+from datetime import timedelta
 
+from dotenv import load_dotenv
 from flask import (
     Flask,
     render_template,
     request,
-    jsonify,
     send_file,
     redirect,
     url_for,
     flash,
     session as flask_session,
     send_from_directory,
-    make_response, session,
+    session,
 )
-from database import session as db_session
 from werkzeug.utils import secure_filename
-from models.user import User
+
+from database.base import session as db_session
 from models.coffre import Coffre
 from models.password_entry import PasswordEntry
-from services.vaults import VaultController
-import os
-from database.base import session as db_session
-import secrets
-from dotenv import load_dotenv
-from datetime import timedelta
+from models.user import User
 from services.pass_fonc import *
-from functools import wraps
-
+from services.vaults import VaultController
 
 load_dotenv()
 
@@ -414,7 +410,8 @@ def update_password_entry(password_entry_id, coffre_id):
 @app.route("/export/<int:coffre_id>", methods=["GET"])
 def export_vault(coffre_id):
     """
-    Exporte les données d'un coffre au format json.
+    Exporte les données d'un coffre au format JSON dans le dossier Downloads
+    et renvoie le fichier pour téléchargement.
 
     Args:
         coffre_id (int): L'ID du coffre à exporter.
@@ -422,81 +419,110 @@ def export_vault(coffre_id):
     Returns:
         Response: Un fichier téléchargeable ou une erreur.
     """
-    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
-
-    if coffre is None:
-        return "Coffre introuvable", 404
-
-    vault_manager = VaultController(coffre)
-
-    file_path = vault_manager.export_coffre()
-
-    if file_path:
-        return send_file(file_path, as_attachment=True)
-    else:
-        return "Erreur lors de l'exportation", 500
+    try:
+        coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+        if coffre is None:
+            flash("Coffre introuvable.", "error")
+            return "Coffre introuvable", 404
 
 
+        vault_manager = VaultController(coffre)
+
+
+        file_path = vault_manager.export_coffre()
+
+
+        if file_path:
+            return send_file(file_path, as_attachment=True)
+        else:
+            flash("Erreur lors de l'exportation du coffre.", "error")
+            return "Erreur lors de l'exportation", 500
+
+    except Exception as e:
+        # Gestion globale des erreurs
+        print(f"Erreur lors de l'exportation : {e}")
+        flash("Une erreur inattendue s'est produite.", "error")
+        return "Une erreur s'est produite", 500
 @app.route("/vaults/import", methods=["GET", "POST"])
 def import_vault():
     """
-    Route Flask pour importer un coffre au format JSON et l'associer à un utilisateur existant.
-
-    Returns:
-        Redirige vers le tableau de bord ou retourne un message d'erreur.
+    Importe un coffre et ses entrées de mot de passe depuis un fichier JSON.
     """
+
     try:
-        # Vérifie que l'utilisateur est connecté
+
         user_id = session.get("user_id")
         if not user_id:
             flash("Vous devez être connecté pour importer un coffre.", "error")
             return redirect(url_for("login"))
 
-        # Récupération de l'utilisateur (exemple avec SQLAlchemy)
+
         user = db_session.query(User).filter_by(Id_user=user_id).one_or_none()
         if not user:
             flash("Utilisateur introuvable.", "error")
             return redirect(url_for("login"))
 
-        # Vérifie si un fichier a été envoyé
         if "vault_file" not in request.files:
             flash("Aucun fichier n'a été sélectionné.", "error")
             return redirect(url_for("create_coffre"))
 
         file = request.files["vault_file"]
 
-        # Vérifie que le fichier a un nom valide
         if file.filename == "":
             flash("Aucun fichier sélectionné.", "error")
             return redirect(url_for("create_coffre"))
 
-        # Vérifie l'extension du fichier
         if not allowed_file(file.filename):
             flash("Seuls les fichiers .json sont autorisés.", "error")
             return redirect(url_for("create_coffre"))
 
-        # Assurez un nom de fichier sécurisé
         filename = secure_filename(file.filename)
         upload_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
-        # Crée le répertoire d'upload s'il n'existe pas
         if not os.path.exists(app.config["UPLOAD_FOLDER"]):
             os.makedirs(app.config["UPLOAD_FOLDER"])
 
-        # Sauvegarde du fichier
+
         file.save(upload_path)
 
-        # Appel au gestionnaire de coffre (VaultController) pour processus d'importation
-        vault_manager = VaultController(None)
-        success = vault_manager.import_vault(user, upload_path)
 
-        # Résultat de l'importation
-        if success:
-            flash("Le fichier a été importé avec succès !", "success")
-            return redirect(url_for("dashboard"))
-        else:
-            flash("Une erreur est survenue lors de l'importation.", "error")
+        with open(upload_path, 'r', encoding='utf-8') as json_file:
+            json_data = json.load(json_file)
+
+        required_keys = ["nom", "password_coffre", "password_entries"]
+        if not all(key in json_data for key in required_keys):
+            flash("Fichier JSON invalide : il manque certains champs requis.", "error")
             return redirect(url_for("create_coffre"))
+
+        new_coffre = Coffre(
+            nom_coffre=json_data["nom"],
+            password_coffre=json_data["password_coffre"],
+            user=user
+        )
+        db_session.add(new_coffre)
+        db_session.commit()
+
+        flash("Nouveau coffre créé avec succès.", "success")
+
+        for entry in json_data["password_entries"]:
+            if all(key in entry for key in ["login", "password", "url", "name"]):
+                try:
+                    password_entry = PasswordEntry(
+                        login=entry["login"],
+                        password=entry["password"],
+                        url=entry["url"],
+                        name=entry["name"],
+                        coffre=new_coffre
+                    )
+                    db_session.add(password_entry)
+                except Exception as entry_error:
+                    flash(f"Erreur lors de l'ajout d'une entrée : {entry_error}", "error")
+            else:
+                flash(f"Entrée incomplète ignorée : {entry}", "error")
+
+        db_session.commit()
+        flash("Toutes les entrées de mots de passe ont été ajoutées avec succès.", "success")
+        return redirect(url_for("dashboard"))
 
     except json.JSONDecodeError:
         flash("Le fichier JSON est invalide.", "error")
@@ -504,7 +530,9 @@ def import_vault():
     except Exception as e:
         print(f"Erreur inattendue : {e}")
         flash("Une erreur inattendue s'est produite.", "error")
+        db_session.rollback()
         return redirect(url_for("create_coffre"))
+
 
 
 if __name__ == "__main__":
