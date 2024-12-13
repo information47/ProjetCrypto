@@ -1,6 +1,8 @@
 from models.coffre import Coffre
 from models.password_entry import PasswordEntry
+from tkinter import Tk, filedialog
 from services.crypto_utils import encrypt_password, decrypt_password
+from database.base import session
 import json
 import os
 
@@ -118,36 +120,79 @@ class VaultController:
             print(f"Erreur lors de l'exportation du coffre : {e}")
             return None
 
-    def import_coffre(self, file_path):
+    def import_vault(self, user, file_path):
         """
-        Importe les données d'un fichier JSON dans le coffre.
+        Importe un coffre à partir d'un fichier JSON donné pour un utilisateur spécifique
+        et persiste dans la base de données.
 
         Args:
-            file_path (str): Le chemin du fichier JSON à importer.
+            user: Instance de l'utilisateur associé au coffre.
+            file_path: Chemin du fichier JSON à importer.
 
         Returns:
-            bool: True si l'importation réussit, False sinon.
+            bool: True si l'importation est réussie, False sinon.
         """
         try:
-            with open(file_path, "r") as file:
-                entries = json.load(file)
-            self.coffre.password_entries.clear()
-            for entry in entries:
-                password_entry = PasswordEntry(
-                    login=entry["login"],
-                    password=entry["password"],
-                    url=entry["url"],
-                    name=entry["name"],
-                    coffre=self.coffre,
+            # Vérification si le fichier existe
+            if not os.path.exists(file_path):
+                print("Le fichier spécifié n'existe pas.")
+                return False
+
+            # Lecture du fichier JSON
+            with open(file_path, "r", encoding="utf-8") as file:
+                json_data = json.load(file)
+
+            # Validation de la structure JSON
+            required_fields = ["nom", "password_coffre", "password_entries"]
+            if not all(field in json_data for field in required_fields):
+                print("Certains champs requis sont manquants dans le fichier JSON.")
+                return False
+
+            # Étape 3 : Créer une instance de Coffre avec les données JSON
+            try:
+                new_coffre = Coffre(
+                    nom_coffre=json_data["nom"],
+                    password_coffre=json_data["password_coffre"],
+                    user=user,  # Associe l'utilisateur au coffre
                 )
 
-                self.coffre.password_entries.append(password_entry)
+                # Ajouter les entrées de mots de passe (password_entries)
+                for entry in json_data["password_entries"]:
+                    if all(key in entry for key in ["login", "password", "url", "name"]):
+                        password_entry = PasswordEntry(
+                            login=entry["login"],
+                            password=entry["password"],
+                            url=entry["url"],
+                            name=entry["name"],
+                            coffre=new_coffre,  # Associe l'entrée au coffre
+                        )
+                        new_coffre.password_entries.append(password_entry)
+                    else:
+                        print(f"Entrée incomplète trouvée : {entry}. Ignorée.")
 
-            return True
+                # Ajouter le coffre à l'utilisateur
+                user.coffres.append(new_coffre)
 
-        except json.JSONDecodeError as jde:
-            print(f"Erreur de format JSON lors de l'importation : {jde}")
+                # Étape 4 : Ajouter le coffre à la base de données
+                session.add(user)
+
+                try:
+                    session.commit()
+                    print("Coffre importé et ajouté avec succès.")
+                    return True
+                except Exception as db_error:
+                    session.rollback()
+                    print(f"Erreur lors de l'ajout du coffre dans la base de données : {db_error}")
+                    return False
+
+            except Exception as e:
+                print(f"Erreur lors de la création du coffre : {e}")
+                return False
+
+        except json.JSONDecodeError:
+            print("Le fichier fourni n'est pas un fichier JSON valide.")
             return False
         except Exception as e:
-            print(f"Erreur lors de l'importation du coffre : {e}")
+            # Gérer toute autre exception inattendue
+            print(f"Erreur inconnue lors de l'importation : {e}")
             return False
