@@ -7,23 +7,23 @@
 `python3 -m venv venv`
 `source venv/bin/activate`
 
-### Installer les dépendances
+## Installer les dépendances
 
 `pip install -r requirements.txt`
 
-### BDD
+## BDD
 
 Créer sa base mysql, puis à la racine du dossier créer un fichier .env qui aura la forme:
 
-DB_HOST=<hôte_de_votre_base>
-DB_USER=<utilisateur>
-DB_PASSWORD=<mot_de_passe>
-DB_NAME=<nom_de_la_base>
-SECRET_KEY=<clé_secrète_pour_le_chiffrement>
-SECRET_KEY_flask=<clé_secrète_pour_flask>
+#### DB_HOST=<hôte_de_votre_base> 
+#### DB_USER=<utilisateur>
+#### DB_PASSWORD=<mot_de_passe>
+#### DB_NAME=<nom_de_la_base>
+#### SECRET_KEY=<clé_secrète_pour_le_chiffrement>
+#### SECRET_KEY_flask=<clé_secrète_pour_flask>
 
-SECRET_KEY : Clé utilisée pour le chiffrement et le hashage des données (poivre).
-SECRET_KEY_flask : Clé secrète utilisée pour sécuriser les sessions Flask.
+#### SECRET_KEY : Clé utilisée pour le chiffrement et le hashage des données (poivre).
+#### SECRET_KEY_flask : Clé secrète utilisée pour sécuriser les sessions Flask.
 
 puis lancer le main à la racine:
 
