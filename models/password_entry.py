@@ -1,8 +1,10 @@
+import os
+
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
+
 from database.base import Base
-from services.crypto_utils import encrypt_password, decrypt_password
-import os
+from services.crypto_utils import encrypt_password
 
 
 class PasswordEntry(Base):
@@ -31,11 +33,11 @@ class PasswordEntry(Base):
     id_coffre = Column(Integer, ForeignKey("coffre.Id_coffre", ondelete="CASCADE"))
     coffre = relationship("Coffre", back_populates="password_entries")
 
-    def __init__(self, login, password, url, name, coffre):
+    def __init__(self, login, password, url, name, coffre, salt=None):
         self.login = login
         self.url = url
         self.name = name
-        self.salt = os.urandom(16).hex()
+        self.salt = salt or os.urandom(16).hex()
         key = bytes.fromhex(self.salt)
         self.password = encrypt_password(password, key)
         self.coffre = coffre

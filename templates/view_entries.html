@@ -74,6 +74,15 @@
         <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Ajouter Entrée</button>
       </form>
 
+    <div class="flex justify-center mt-6">
+    <form method="POST" action="{{ url_for('import_vault', coffre_id=coffre.Id_coffre) }}" enctype="multipart/form-data">
+        <input type="file" name="vault_file" accept=".json" class="mb-4">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+            Importer
+        </button>
+    </form>
+</div>
+
      <div class="text-center mt-6">
         <form method="get" action="{{ url_for('export_vault', coffre_id=coffre.Id_coffre) }}" class="text-right mt-4">
             <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
