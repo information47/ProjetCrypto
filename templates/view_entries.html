@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Entrées de Mot de Passe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex justify-center items-center min-h-screen"
+  style="background-image: url('https://files.123freevectors.com/wp-content/original/156170-abstract-light-blue-background-vector-illustration.jpg');"
+>
+    <div class="container bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Entrées de Mot de Passe pour : {{ coffre.nom_coffre }}</h2>
+
+      <h3 class="text-xl font-semibold text-gray-700 mb-4">Vos Entrées de Mot de Passe</h3>
+      <table class="w-full border-collapse">
+        <thead>
+          <tr>
+            <th class="border-b py-2 text-left text-sm text-gray-600">Nom</th>
+            <th class="border-b py-2 text-left text-sm text-gray-600">Login</th>
+            <th class="border-b py-2 text-left text-sm text-gray-600">URL</th>
+            <th class="border-b py-2 text-left text-sm text-gray-600">Mot de Passe</th>
+            <th class="border-b py-2 text-sm text-gray-600"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in entries %}
+          <tr class="hover:bg-gray-100">
+            <td class="border-b py-2 text-sm text-gray-800">{{ entry.name }}</td>
+            <td class="border-b py-2 text-sm text-gray-800">{{ entry.login }}</td>
+            <td class="border-b py-2 text-sm text-blue-500"><a href="{{ entry.url }}" target="_blank">{{ entry.url }}</a></td>
+            <td class="border-b py-2 text-sm text-gray-800">{{ entry.password }}</td>
+            <td class="border-b py-2 text-right">
+              <form method="post" action="{{ url_for('delete_password_entry', password_entry_id=entry.Id_PasswordEntry, coffre_id=coffre.Id_coffre) }}" class="inline-block">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded">Supprimer</button>
+              </form>
+              <button onclick="openModal('{{ entry.Id_PasswordEntry }}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded ml-2">Modifier</button>
+
+              <div id="modal-{{ entry.Id_PasswordEntry }}" class="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+                <div class="bg-white rounded-lg shadow-lg w-1/2 p-6">
+                  <span class="close text-gray-500 cursor-pointer text-2xl" onclick="closeModal('{{ entry.Id_PasswordEntry }}')">&times;</span>
+                  <form method="post" action="{{ url_for('update_password_entry', password_entry_id=entry.Id_PasswordEntry, coffre_id=coffre.Id_coffre) }}">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Modifier l'entrée</h3>
+                    <input type="text" name="login" placeholder="Login" value="{{ entry.login }}" required class="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                    <input type="password" name="password" placeholder="Mot de passe" value="{{ entry.password }}" required class="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                    <input type="text" name="url" placeholder="URL" value="{{ entry.url }}" class="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                    <input type="text" name="name" placeholder="Nom" value="{{ entry.name }}" required class="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Valider</button>
+                  </form>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-gray-500 py-4">Aucune entrée de mot de passe trouvée.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <h3 class="text-xl font-semibold text-gray-700 mt-8 mb-4">Ajouter une Entrée de Mot de Passe</h3>
+      <form method="post" action="{{ url_for('add_password_entry', coffre_id=coffre.Id_coffre) }}">
+        <label for="name" class="block text-sm font-medium text-gray-700">Nom:</label>
+        <input type="text" id="name" name="name" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" />
+
+        <label for="login" class="block text-sm font-medium text-gray-700">Login:</label>
+        <input type="text" id="login" name="login" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" />
+
+        <label for="url" class="block text-sm font-medium text-gray-700">URL:</label>
+        <input type="url" id="url" name="url" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" />
+
+        <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe:</label>
+        <input type="password" id="password" name="password" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" />
+
+        <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Ajouter Entrée</button>
+      </form>
+
+    <div class="flex justify-center mt-6">
+    <form method="POST" action="{{ url_for('import_vault', coffre_id=coffre.Id_coffre) }}" enctype="multipart/form-data">
+        <input type="file" name="vault_file" accept=".json" class="mb-4">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+            Importer
+        </button>
+    </form>
+</div>
+
+     <div class="text-center mt-6">
+        <form method="get" action="{{ url_for('export_vault', coffre_id=coffre.Id_coffre) }}" class="text-right mt-4">
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                Exporter le coffre
+            </button>
+        </form>
+     </div>
+
+      <a href="{{ url_for('dashboard') }}" class="block text-center text-blue-500 hover:underline mt-6">Retourner au tableau de bord</a>
+
+      <div class="messages mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+          <li class="text-center text-red-500 text-sm">{{ message }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+
+    <script>
+      function openModal(entryId) {
+        document.getElementById(`modal-${entryId}`).classList.remove('hidden');
+      }
+
+      function closeModal(entryId) {
+        document.getElementById(`modal-${entryId}`).classList.add('hidden');
+      }
+
+      window.addEventListener('click', (event) => {
+        document.querySelectorAll('.modal').forEach((modal) => {
+          if (event.target === modal) {
+            modal.classList.add('hidden');
+          }
+        });
+      });
+
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+          window.location.reload();
+        }
+      });
+    </script>
+  </body>
+</html>

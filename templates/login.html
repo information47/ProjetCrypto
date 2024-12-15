@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Connexion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex justify-center items-center h-screen"
+  style="background-image: url('https://files.123freevectors.com/wp-content/original/156170-abstract-light-blue-background-vector-illustration.jpg');"
+>
+    <div class="container bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Connexion</h2>
+      <form method="POST" action="{{ url_for('login') }}">
+        <label for="email" class="block text-sm font-medium text-gray-700">Email :</label>
+        <input type="email" id="email" name="email" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" />
+
+        <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe :</label>
+        <input type="password" id="password" name="password" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" />
+
+        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Se connecter</button>
+      </form>
+      <p class="text-center text-gray-600 mt-4">
+        Pas encore inscrit ?
+        <a href="{{ url_for('register') }}" class="text-blue-500 hover:underline">Créer un compte</a>
+      </p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <ul class="mt-4">
+        {% for category, message in messages %}
+        <li class="text-center text-red-500 text-sm">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% endwith %}
+    </div>
+
+    <script>
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+          window.location.reload();
+        }
+      });
+    </script>
+  </body>
+</html>

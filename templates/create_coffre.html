@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <title>Créer un Coffre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex justify-center items-center h-screen"
+  style="background-image: url('https://files.123freevectors.com/wp-content/original/156170-abstract-light-blue-background-vector-illustration.jpg');"
+>
+    <div class="container bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Créer un nouveau Coffre</h2>
+      <form method="post">
+        <label for="nom" class="block text-sm font-medium text-gray-700">Nom du Coffre:</label>
+        <input type="text" id="nom" name="nom" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" />
+
+        <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe du Coffre:</label>
+        <input type="password" id="password" name="password_coffre" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2" />
+
+        <div class="password-strength h-2 bg-gray-200 rounded-md mb-2">
+          <span id="mdp_indicateur" class="block h-full w-0 bg-red-500 transition-all"></span>
+        </div>
+        <div class="password-message text-sm text-gray-600 mb-4" id="msg"></div>
+
+        <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Créer le Coffre</button>
+      </form>
+
+      <a href="{{ url_for('dashboard') }}" class="block text-center text-blue-500 hover:underline mt-6">Retourner au tableau de bord</a>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <ul class="mt-4">
+        {% for category, message in messages %}
+        <li class="text-center text-red-500 text-sm">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% endwith %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/robuste.js') }}"></script>
+    <script>
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+          window.location.reload();
+        }
+      });
+    </script>
+  </body>
+</html>
