@@ -6,7 +6,11 @@
   </head>
   <body
     class="bg-gray-100 min-h-screen"
-    style="background-image: url('https://files.123freevectors.com/wp-content/original/156170-abstract-light-blue-background-vector-illustration.jpg'); background-size: cover; background-position: center;"
+    style="
+      background-image: url('https://files.123freevectors.com/wp-content/original/156170-abstract-light-blue-background-vector-illustration.jpg');
+      background-size: cover;
+      background-position: center;
+    "
   >
     <div class="flex justify-center items-center min-h-screen">
       <div class="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
@@ -22,39 +26,50 @@
         </h3>
         <ul class="space-y-4">
           {% for coffre in coffres %}
-          <li class="bg-blue-50 hover:bg-blue-100 shadow-sm rounded-md p-4 transition-colors duration-200">
+          <li
+            class="bg-blue-50 hover:bg-blue-100 shadow-sm rounded-md p-4 flex justify-between items-center transition-colors duration-200"
+          >
             <a
               href="{{ url_for('unlock_coffre', coffre_id=coffre.Id_coffre) }}"
               class="text-blue-600 hover:text-blue-800 font-medium"
-              >{{ coffre.nom_coffre }}</a
             >
+              {{ coffre.nom_coffre }}
+            </a>
+            <form
+              action="{{ url_for('delete_coffre', coffre_id=coffre.Id_coffre) }}"
+              method="POST"
+              class="inline"
+              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce coffre ?');"
+            >
+              <button
+                type="submit"
+                class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded"
+              >
+                Supprimer
+              </button>
+            </form>
           </li>
           {% else %}
-          <li class="text-gray-500 text-center">
-            Pas de coffres disponibles
-          </li>
+          <li class="text-gray-500 text-center">Pas de coffres disponibles</li>
           {% endfor %}
         </ul>
 
-       <div class="text-center mt-6">
+        <div class="text-center mt-6">
           <a
             href="{{ url_for('create_coffre') }}"
             class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
             >Créer un nouveau Coffre</a
           >
-       </div>
+        </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
         <ul class="mt-6">
           {% for category, message in messages %}
-          <li class="text-center text-red-500 text-sm">
-            {{ message }}
-          </li>
+          <li class="text-center text-red-500 text-sm">{{ message }}</li>
           {% endfor %}
         </ul>
-        {% endif %}
-        {% endwith %}
+        {% endif %} {% endwith %}
 
         <div class="text-right mt-8">
           <a

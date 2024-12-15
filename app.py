@@ -44,6 +44,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @app.route("/")
 def home():
     """
@@ -267,6 +268,38 @@ def unlock_coffre(coffre_id):
     return render_template("unlock_coffre.html", coffre=coffre)
 
 
+@app.route("/delete-coffre/<int:coffre_id>", methods=["POST"])
+def delete_coffre(coffre_id):
+    """
+    Supprime un coffre spécifié par son ID.
+
+    Args:
+        coffre_id (int): L'ID du coffre à supprimer.
+
+    Returns:
+        Response: Redirection vers le tableau de bord avec un message flash.
+    """
+    if "user_id" not in flask_session or "session_token" not in flask_session:
+        flash("Veuillez vous connecter pour effectuer cette action.", "error")
+        return redirect(url_for("login"))
+
+    coffre = db_session.query(Coffre).filter_by(Id_coffre=coffre_id).first()
+
+    if not coffre:
+        flash("Coffre introuvable.", "error")
+        return redirect(url_for("dashboard"))
+
+    try:
+        db_session.delete(coffre)
+        db_session.commit()
+        flash("Coffre supprimé avec succès.", "success")
+    except Exception as e:
+        db_session.rollback()
+        flash(f"Erreur lors de la suppression du coffre : {e}", "error")
+
+    return redirect(url_for("dashboard"))
+
+
 @app.route("/add-password-entry/<int:coffre_id>", methods=["POST"])
 def add_password_entry(coffre_id):
     """
@@ -425,12 +458,9 @@ def export_vault(coffre_id):
             flash("Coffre introuvable.", "error")
             return "Coffre introuvable", 404
 
-
         vault_manager = VaultController(coffre)
 
-
         file_path = vault_manager.export_coffre()
-
 
         if file_path:
             return send_file(file_path, as_attachment=True)
@@ -439,10 +469,11 @@ def export_vault(coffre_id):
             return "Erreur lors de l'exportation", 500
 
     except Exception as e:
-        # Gestion globale des erreurs
         print(f"Erreur lors de l'exportation : {e}")
         flash("Une erreur inattendue s'est produite.", "error")
         return "Une erreur s'est produite", 500
+
+
 @app.route("/vaults/import", methods=["GET", "POST"])
 def import_vault():
     """
@@ -455,7 +486,6 @@ def import_vault():
         if not user_id:
             flash("Vous devez être connecté pour importer un coffre.", "error")
             return redirect(url_for("login"))
-
 
         user = db_session.query(User).filter_by(Id_user=user_id).one_or_none()
         if not user:
@@ -482,11 +512,9 @@ def import_vault():
         if not os.path.exists(app.config["UPLOAD_FOLDER"]):
             os.makedirs(app.config["UPLOAD_FOLDER"])
 
-
         file.save(upload_path)
 
-
-        with open(upload_path, 'r', encoding='utf-8') as json_file:
+        with open(upload_path, "r", encoding="utf-8") as json_file:
             json_data = json.load(json_file)
 
         required_keys = ["nom", "password_coffre", "password_entries"]
@@ -497,7 +525,7 @@ def import_vault():
         new_coffre = Coffre(
             nom_coffre=json_data["nom"],
             password_coffre=json_data["password_coffre"],
-            user=user
+            user=user,
         )
         db_session.add(new_coffre)
         db_session.commit()
@@ -512,16 +540,21 @@ def import_vault():
                         password=entry["password"],
                         url=entry["url"],
                         name=entry["name"],
-                        coffre=new_coffre
+                        coffre=new_coffre,
                     )
                     db_session.add(password_entry)
                 except Exception as entry_error:
-                    flash(f"Erreur lors de l'ajout d'une entrée : {entry_error}", "error")
+                    flash(
+                        f"Erreur lors de l'ajout d'une entrée : {entry_error}", "error"
+                    )
             else:
                 flash(f"Entrée incomplète ignorée : {entry}", "error")
 
         db_session.commit()
-        flash("Toutes les entrées de mots de passe ont été ajoutées avec succès.", "success")
+        flash(
+            "Toutes les entrées de mots de passe ont été ajoutées avec succès.",
+            "success",
+        )
         return redirect(url_for("dashboard"))
 
     except json.JSONDecodeError:
@@ -532,7 +565,6 @@ def import_vault():
         flash("Une erreur inattendue s'est produite.", "error")
         db_session.rollback()
         return redirect(url_for("create_coffre"))
-
 
 
 if __name__ == "__main__":
