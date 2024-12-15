@@ -1,6 +1,8 @@
-# ProjetCrypto
+# Gestionnaire de mots de passes
 
-Gestionnaire de mots de passes
+## Installation
+
+### Créer un environnement virtuel (si vous êtes sur mac sinon faire l'étape suivante)
 
 `python3 -m venv venv`
 `source venv/bin/activate`
@@ -13,35 +15,15 @@ Gestionnaire de mots de passes
 
 Créer sa base mysql, puis à la racine du dossier créer un fichier .env qui aura la forme:
 
-DB_HOST=
+DB_HOST=<hôte_de_votre_base>
+DB_USER=<utilisateur>
+DB_PASSWORD=<mot_de_passe>
+DB_NAME=<nom_de_la_base>
+SECRET_KEY=<clé_secrète_pour_le_chiffrement>
+SECRET_KEY_flask=<clé_secrète_pour_flask>
 
-#
-
-DB_USER=
-
-#
-
-DB_PASSWORD=
-
-#
-
-DB_NAME=
-
-#
-
-SECRET_KEY=
-
-#
-
-SECRET_KEY_flask=
-
-#
-
-où SECRET_KEY est la clé secret pour le hashage et le chiffrement (poivre)
-
-#
-
-SECRET_KEY_flask est la clé secrète de l'application flask
+SECRET_KEY : Clé utilisée pour le chiffrement et le hashage des données (poivre).
+SECRET_KEY_flask : Clé secrète utilisée pour sécuriser les sessions Flask.
 
 puis lancer le main à la racine:
 
@@ -49,7 +31,7 @@ puis lancer le main à la racine:
 
 ## HTTPS
 
-Car sinon avec WireShark on peut capturer et les afficher en clair les mots de passes lors du transfert au serveur:
+Sans HTTPS, les mots de passe transitent en clair et peuvent être interceptés à l'aide d'outils comme Wireshark :
 ![](other/wireshark.png)
 
 ### Génère une clé privée
@@ -64,9 +46,12 @@ Car sinon avec WireShark on peut capturer et les afficher en clair les mots de p
 
 `openssl x509 -req -days 365 -in cert.csr -signkey key.pem -out cert.pem`
 
-## Pour lancer le projet faire
+## Pour démarrer l'application
 
 `python app.py`
+
+puis se rendre sur :
+`https://127.0.0.1:5000`
 
 ###
 
